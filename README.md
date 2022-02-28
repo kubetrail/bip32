@@ -187,3 +187,8 @@ ok ok ok ok ok ok
 https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#test-vector-5
 ok ok ok ok ok ok ok ok ok ok ok ok ok ok ok validation failed
 ```
+
+## references
+* [BIP-32 Spec](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
+* [Key generation online tool](https://iancoleman.io/bip39/#english)
+* [Medium post on key generation](https://wolovim.medium.com/ethereum-201-hd-wallets-11d0c93c87f7)
