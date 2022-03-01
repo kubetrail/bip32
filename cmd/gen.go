@@ -47,7 +47,7 @@ func init() {
 	rootCmd.AddCommand(genCmd)
 	f := genCmd.Flags()
 
-	f.String(flags.Chain, "m", "Chain Derivation path")
+	f.String(flags.DerivationPath, "m", "Chain Derivation path")
 	f.Bool(flags.UsePassphrase, false, "Prompt for secret passphrase")
 	f.Bool(flags.InputHexSeed, false, "Treat input as hex seed instead of mnemonic")
 	f.Bool(flags.SkipMnemonicValidation, false, "Skip mnemonic validation")

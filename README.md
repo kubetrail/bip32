@@ -48,7 +48,7 @@ Usage:
   bip32 gen [flags]
 
 Flags:
-      --chain string               Chain Derivation path (default "m")
+      --derivation-path string               Chain Derivation path (default "m")
   -h, --help                       help for gen
       --input-hex-seed             Treat input as hex seed instead of mnemonic
       --skip-mnemonic-validation   Skip mnemonic validation
@@ -80,7 +80,7 @@ A chain derivation path can be provided such as `m`, `m/0`, `m/0H`, `m/0/234` et
 
 Generate root keys
 ```bash
-echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 | bip32 gen --input-hex-seed --chain=m | jq '.'
+echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 | bip32 gen --input-hex-seed --derivation-path=m | jq '.'
 {
   "prv": "xprv9s21ZrQH143K48vGoLGRPxgo2JNkJ3J3fqkirQC2zVdk5Dgd5w14S7fRDyHH4dWNHUgkvsvNDCkvAwcSHNAQwhwgNMgZhLtQC63zxwhQmRv",
   "pub": "xpub661MyMwAqRbcGczjuMoRm6dXaLDEhW1u34gKenbeYqAix21mdUKJyuyu5F1rzYGVxyL6tmgBUAEPrEz92mBXjByMRiJdba9wpnN37RLLAXa"
@@ -89,16 +89,16 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 | bip32 ge
 
 Generate first hardened child of root key
 ```bash
-echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 | bip32 gen --input-hex-seed --chain=m/0h | jq '.'
+echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 | bip32 gen --input-hex-seed --derivation-path=m/0h | jq '.'
 {
   "prv": "xprv9vB7xEWwNp9kh1wQRfCCQMnZUEG21LpbR9NPCNN1dwhiZkjjeGRnaALmPXCX7SgjFTiCTT6bXes17boXtjq3xLpcDjzEuGLQBM5ohqkao9G",
   "pub": "xpub69AUMk3qDBi3uW1sXgjCmVjJ2G6WQoYSnNHyzkmdCHEhSZ4tBok37xfFEqHd2AddP56Tqp4o56AePAgCjYdvpW2PU2jbUPFKsav5ut6Ch1m"
 }
 ```
 
-Generate third child of second hardened child of root key
+Generate fourth child of third hardened child of root key
 ```bash
-echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 | bip32 gen --input-hex-seed --chain=m/2h/3 | jq '.'
+echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 | bip32 gen --input-hex-seed --derivation-path=m/2h/3 | jq '.'
 {
   "prv": "xprv9xenovaMSsLaNKX8Yz2K1TEZ1b8VymYyji1SL6URcvAMT4EXKQTQxySayFFk2CA6BrhVaBkXWuzTSfNHMEuu1a6gCxZhdc5t9afpx7YRdq4",
   "pub": "xpub6Be9DS7FHEtsaobbf1ZKNbBHZcxzPEGq6vw38Ut3BFhLKrZfrwmfWmm4pWbqVMyPauABhiVdazRtW9ZBT7fpKR9Pbw5puUAsZaTSRhshGU4"
@@ -190,5 +190,6 @@ ok ok ok ok ok ok ok ok ok ok ok ok ok ok ok validation failed
 
 ## references
 * [BIP-32 Spec](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
+* [BIP-44 Spec](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
 * [Key generation online tool](https://iancoleman.io/bip39/#english)
 * [Medium post on key generation](https://wolovim.medium.com/ethereum-201-hd-wallets-11d0c93c87f7)

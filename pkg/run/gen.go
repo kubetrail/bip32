@@ -21,12 +21,12 @@ import (
 func Gen(cmd *cobra.Command, args []string) error {
 	_ = viper.BindPFlag(flags.UsePassphrase, cmd.Flags().Lookup(flags.UsePassphrase))
 	_ = viper.BindPFlag(flags.SkipMnemonicValidation, cmd.Flags().Lookup(flags.SkipMnemonicValidation))
-	_ = viper.BindPFlag(flags.Chain, cmd.Flags().Lookup(flags.Chain))
+	_ = viper.BindPFlag(flags.DerivationPath, cmd.Flags().Lookup(flags.DerivationPath))
 	_ = viper.BindPFlag(flags.InputHexSeed, cmd.Flags().Lookup(flags.InputHexSeed))
 
 	usePassphrase := viper.GetBool(flags.UsePassphrase)
 	skipMnemonicValidation := viper.GetBool(flags.SkipMnemonicValidation)
-	chain := viper.GetString(flags.Chain)
+	derivationPath := viper.GetString(flags.DerivationPath)
 	inputHexSeed := viper.GetBool(flags.InputHexSeed)
 
 	prompt, err := getPromptStatus()
@@ -120,10 +120,10 @@ func Gen(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to generate root key: %w", err)
 	}
 
-	chain = strings.Trim(chain, "/")
-	parts := strings.Split(chain, "/")
+	derivationPath = strings.Trim(derivationPath, "/")
+	parts := strings.Split(derivationPath, "/")
 	if len(parts) == 0 || parts[0] != "m" {
-		return fmt.Errorf("invalid derivation path: %s", chain)
+		return fmt.Errorf("invalid derivation path: %s", derivationPath)
 	}
 
 	for i, part := range parts {
@@ -132,7 +132,7 @@ func Gen(cmd *cobra.Command, args []string) error {
 		}
 
 		if len(part) == 0 {
-			return fmt.Errorf("invalid derivation path at index %d: %s", i, chain)
+			return fmt.Errorf("invalid derivation path at index %d: %s", i, derivationPath)
 		}
 
 		var idx uint32
@@ -143,7 +143,7 @@ func Gen(cmd *cobra.Command, args []string) error {
 
 		index, err := strconv.ParseInt(part, 10, 64)
 		if err != nil || index < 0 {
-			return fmt.Errorf("invalid derivation path at index %d: %s, %w", i, chain, err)
+			return fmt.Errorf("invalid derivation path at index %d: %s, %w", i, derivationPath, err)
 		}
 
 		idx += uint32(index)
@@ -153,12 +153,15 @@ func Gen(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	outPrv := fmt.Sprintf("%s", key)
+	outPub := fmt.Sprintf("%s", key.PublicKey())
+
 	if prompt {
-		if _, err := fmt.Fprintln(cmd.OutOrStdout(), "pub:", key.PublicKey()); err != nil {
+		if _, err := fmt.Fprintln(cmd.OutOrStdout(), "pub:", outPub); err != nil {
 			return fmt.Errorf("failed to write key to output: %w", err)
 		}
 
-		if _, err := fmt.Fprintln(cmd.OutOrStdout(), "prv:", key); err != nil {
+		if _, err := fmt.Fprintln(cmd.OutOrStdout(), "prv:", outPrv); err != nil {
 			return fmt.Errorf("failed to write key to output: %w", err)
 		}
 
@@ -170,8 +173,8 @@ func Gen(cmd *cobra.Command, args []string) error {
 			Prv string `json:"prv,omitempty"`
 			Pub string `json:"pub,omitempty"`
 		}{
-			Prv: fmt.Sprintf("%s", key),
-			Pub: fmt.Sprintf("%s", key.PublicKey()),
+			Prv: outPrv,
+			Pub: outPub,
 		},
 	)
 	if err != nil {

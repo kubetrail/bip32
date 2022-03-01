@@ -1,7 +1,7 @@
 package flags
 
 const (
-	Chain                  = "chain"
+	DerivationPath         = "derivation-path"
 	UsePassphrase          = "use-passphrase"
 	SkipMnemonicValidation = "skip-mnemonic-validation"
 	InputHexSeed           = "input-hex-seed"
