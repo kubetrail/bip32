@@ -9,10 +9,8 @@ Key generation and validation based on BIP-32 spec
 This step assumes you have [Go compiler toolchain](https://go.dev/dl/)
 installed on your system.
 
-Download this repo to a folder and cd to it. Make sure `go` toolchain
-is installed
 ```bash
-go install
+go install github.com/kubetrail/bip32@latest
 ```
 Add autocompletion for `bash` to your `.bashrc`
 ```bash
@@ -25,15 +23,23 @@ or using a seed.
 
 ```bash
 bip32 gen
+```
+```text
 Enter mnemonic: client sustain stumble prosper pepper maze prison view omit gold organ youth vintage tattoo practice mutual budget excite bubble economy quick conduct spot end
+addr: 15MNqcoicDEFkbTLLPYpDmxo5TDTPcNsQv
 pub: xpub661MyMwAqRbcGVTuch4jj6mRfKpjGHJxMCJJgmurP9TQ6hqppgF644VGUevkyCztRpY4PjssirGR5LPpBSyr8BE8GGWev9qGihrfzGB7TpM
 prv: xprv9s21ZrQH143K41PSWfXjMxph7HzErpb6yyNhtPWEpovRDuWgH8vqWGAndNz1oodj88J8JnaNyQMoL2yNKbYWCubfVTF9ux7aiNJCrF8thw7
 ```
 
 Alternatively, pass mnemonic via STDIN pipe:
 ```bash
-echo client sustain stumble prosper pepper maze prison view omit gold organ youth vintage tattoo practice mutual budget excite bubble economy quick conduct spot end | bip32 gen | jq '.'
+echo client sustain stumble prosper pepper maze prison view omit gold organ youth vintage tattoo practice mutual budget excite bubble economy quick conduct spot end \
+  | bip32 gen \
+  | jq '.'
+```
+```json
 {
+  "addr": "15MNqcoicDEFkbTLLPYpDmxo5TDTPcNsQv",
   "prv": "xprv9s21ZrQH143K41PSWfXjMxph7HzErpb6yyNhtPWEpovRDuWgH8vqWGAndNz1oodj88J8JnaNyQMoL2yNKbYWCubfVTF9ux7aiNJCrF8thw7",
   "pub": "xpub661MyMwAqRbcGVTuch4jj6mRfKpjGHJxMCJJgmurP9TQ6hqppgF644VGUevkyCztRpY4PjssirGR5LPpBSyr8BE8GGWev9qGihrfzGB7TpM"
 }
@@ -42,6 +48,8 @@ echo client sustain stumble prosper pepper maze prison view omit gold organ yout
 Or skip mnemonic validation when using an invalid mnemonic
 ```bash
 bip32 gen
+```
+```text
 Enter mnemonic: this is an invalid mnemonic
 Error: mnemonic is invalid or please use --skip-mnemonic-validation flag
 Usage:
@@ -61,16 +69,22 @@ Error: mnemonic is invalid or please use --skip-mnemonic-validation flag
 ```
 
 ```bash
-bip32 gen --skip-mnemonic-validation 
+bip32 gen --skip-mnemonic-validation
+```
+```text
 Enter mnemonic: this is an invalid mnemonic
+addr: 18P6a9ciMaVKg7EizNijgzdHbvHY7mQt7x
 pub: xpub661MyMwAqRbcGR8VcxX4xzHck2vkpqYsZpR2yuLLbSp9bLisq1EGB3XXeuz4xhRG5P92Witd9Qefo6qLaPmAXv8JPfcYwYdQMWU9g1DCAk1
 prv: xprv9s21ZrQH143K3w42Wvz4brLtC16GRNq2CbVSBWvj37HAiYPjHTv1dFD3oecPnmevt1oRsvNJc8pKspRVvq2yoehVwbzkek1nHVwDraPCjvc
 ```
 
 Use hex seed instead of a mnemonic to generate keys:
 ```bash
-bip32 gen --input-hex-seed 
+bip32 gen --input-hex-seed
+```
+```text
 Enter seed in hex: 000102030405060708090a0b0c0d0e0f
+addr: 1Lq9EYuAopf99uMbbCJoyyMpac5iGSn5cZ
 pub: xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8
 prv: xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi
 ```
@@ -80,8 +94,13 @@ A chain derivation path can be provided such as `m`, `m/0`, `m/0H`, `m/0/234` et
 
 Generate root keys
 ```bash
-echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 | bip32 gen --input-hex-seed --derivation-path=m | jq '.'
+echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
+  | bip32 gen --input-hex-seed --derivation-path=m \
+  | jq '.'
+```
+```json
 {
+  "addr": "14Zm6hiqcKz4JgBgYzR7yMoZTi7QjRVcfm",
   "prv": "xprv9s21ZrQH143K48vGoLGRPxgo2JNkJ3J3fqkirQC2zVdk5Dgd5w14S7fRDyHH4dWNHUgkvsvNDCkvAwcSHNAQwhwgNMgZhLtQC63zxwhQmRv",
   "pub": "xpub661MyMwAqRbcGczjuMoRm6dXaLDEhW1u34gKenbeYqAix21mdUKJyuyu5F1rzYGVxyL6tmgBUAEPrEz92mBXjByMRiJdba9wpnN37RLLAXa"
 }
@@ -89,8 +108,13 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 | bip32 ge
 
 Generate first hardened child of root key
 ```bash
-echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 | bip32 gen --input-hex-seed --derivation-path=m/0h | jq '.'
+echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
+  | bip32 gen --input-hex-seed --derivation-path=m/0h \
+  | jq '.'
+```
+```json
 {
+  "addr": "1MRgW1SSkSZVnGwWGm48Q3VYpFhcu7HXey",
   "prv": "xprv9vB7xEWwNp9kh1wQRfCCQMnZUEG21LpbR9NPCNN1dwhiZkjjeGRnaALmPXCX7SgjFTiCTT6bXes17boXtjq3xLpcDjzEuGLQBM5ohqkao9G",
   "pub": "xpub69AUMk3qDBi3uW1sXgjCmVjJ2G6WQoYSnNHyzkmdCHEhSZ4tBok37xfFEqHd2AddP56Tqp4o56AePAgCjYdvpW2PU2jbUPFKsav5ut6Ch1m"
 }
@@ -98,18 +122,59 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 | bip32 ge
 
 Generate fourth child of third hardened child of root key
 ```bash
-echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 | bip32 gen --input-hex-seed --derivation-path=m/2h/3 | jq '.'
+echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
+  | bip32 gen --input-hex-seed --derivation-path=m/2h/3 \
+  | jq '.'
+```
+```json
 {
+  "addr": "18NvpJbsjLYV3aMGADkD7UVjtyKEG52fW4",
   "prv": "xprv9xenovaMSsLaNKX8Yz2K1TEZ1b8VymYyji1SL6URcvAMT4EXKQTQxySayFFk2CA6BrhVaBkXWuzTSfNHMEuu1a6gCxZhdc5t9afpx7YRdq4",
   "pub": "xpub6Be9DS7FHEtsaobbf1ZKNbBHZcxzPEGq6vw38Ut3BFhLKrZfrwmfWmm4pWbqVMyPauABhiVdazRtW9ZBT7fpKR9Pbw5puUAsZaTSRhshGU4"
 }
 ```
 
+## network selection
+Bitcoin networks `mainnet` (default) and `testnet` can be selected using `--network` flag.
+
+Example below shows generation for `mainnet` using a hex seed
+```bash
+echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
+  | bip32 gen --input-hex-seed --derivation-path=m/2h/3 --network=mainnet \
+  | jq '.'
+```
+```json
+{
+  "addr": "18NvpJbsjLYV3aMGADkD7UVjtyKEG52fW4",
+  "prv": "xprv9xenovaMSsLaNKX8Yz2K1TEZ1b8VymYyji1SL6URcvAMT4EXKQTQxySayFFk2CA6BrhVaBkXWuzTSfNHMEuu1a6gCxZhdc5t9afpx7YRdq4",
+  "pub": "xpub6Be9DS7FHEtsaobbf1ZKNbBHZcxzPEGq6vw38Ut3BFhLKrZfrwmfWmm4pWbqVMyPauABhiVdazRtW9ZBT7fpKR9Pbw5puUAsZaTSRhshGU4"
+}
+```
+
+Same hex seed used for generation on `testnet` results in different keys.
+```bash
+echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
+  | bip32 gen --input-hex-seed --derivation-path=m/2h/3 --network=testnet \
+  | jq '.'
+```
+```json
+{
+  "addr": "mntt7MgrYMyjpgpssniawPi4kxuwCUphN3",
+  "prv": "tprv8fKjbFtgr9Aey8kfDYspB6rYKiYiDHaz5FvZCWtt6teqEeycJmoAUip2tRRQ2ZYQZJEGaHNHgGaFuWv2UTFqpdNGjbn1Hxow4gRFPpNSMdh",
+  "pub": "tpubDC1mjfvvzWrKrbnT7CYQaWWetk4eNcmteZXLV2wBXATE59ENwAckfDRu4Ygd1rvdNoh6KJ1W86FwCL3nqyX4CrbgfXq8azq79Y3rBjRaSFE"
+}
+```
+
+> Please note that `testnet` keys are currently not tested via any test vector
+
 ## decode keys
 Keys have internal structure such as value, child index, parent signature, fingerprints etc.
 ```bash
 echo xprv9xenovaMSsLaNKX8Yz2K1TEZ1b8VymYyji1SL6URcvAMT4EXKQTQxySayFFk2CA6BrhVaBkXWuzTSfNHMEuu1a6gCxZhdc5t9afpx7YRdq4 \
-  | bip32 decode | jq '.'
+  | bip32 decode \
+  | jq '.'
+```
+```json
 {
   "Key": "ZhotNe3SInt/H1Hub0eW31jIj5OAJ8rblvh8BTB7Nlk=",
   "Version": "BIit5A==",
@@ -124,7 +189,10 @@ echo xprv9xenovaMSsLaNKX8Yz2K1TEZ1b8VymYyji1SL6URcvAMT4EXKQTQxySayFFk2CA6BrhVaBk
 Similarly, a public key can be decoded as follows:
 ```bash
 echo xpub661MyMwAqRbcGczjuMoRm6dXaLDEhW1u34gKenbeYqAix21mdUKJyuyu5F1rzYGVxyL6tmgBUAEPrEz92mBXjByMRiJdba9wpnN37RLLAXa \
-  | bip32 decode | jq '.'
+  | bip32 decode \
+  | jq '.'
+```
+```json
 {
   "Key": "Am9v7ckkD2HaqccUS2gqQwo6E2ZXb4QL8tBwEB/LyaAt",
   "Version": "BIiyHg==",
@@ -141,14 +209,18 @@ Validity of the keys can be checked (for the most part)
 
 For instance, key below is valid
 ```bash
-bip32 validate 
+bip32 validate
+```
+```text
 Enter key: xpub661MyMwAqRbcGczjuMoRm6dXaLDEhW1u34gKenbeYqAix21mdUKJyuyu5F1rzYGVxyL6tmgBUAEPrEz92mBXjByMRiJdba9wpnN37RLLAXa
 key is valid
 ```
 
 However, this key is invalid.
 ```bash
-bip32 validate 
+bip32 validate
+```
+```text
 Enter key: xpub661MyMwAqRbcEYS8w7XLSVeEsBXy79zSzH1J8vCdxAZningWLdN3zgtU6LBpB85b3D2yc8sfvZU521AAwdZafEz7mnzBBsz4wKY5fTtTQBm
 Error: private key with public key version mismatch
 Usage:
@@ -171,7 +243,9 @@ more examples of invalid keys.
 > One of the test cases in test vector 5 related to invalid public key is currently
 > not getting detected.
 ```bash
-./test.sh 
+./test/test.sh
+```
+```text
 https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#test-vector-1
 ok ok ok ok ok ok ok ok ok ok ok ok 
 
