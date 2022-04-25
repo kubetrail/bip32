@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/tyler-smith/go-bip32"
+	"github.com/wemeetagain/go-hdwallet"
 )
 
 func Validate(cmd *cobra.Command, args []string) error {
@@ -36,16 +37,20 @@ func Validate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to decode key: %w", err)
 	}
 
-	if !bytes.Equal(key.Version, bip32.PrivateWalletVersion) &&
-		!bytes.Equal(key.Version, bip32.PublicWalletVersion) {
+	if !bytes.Equal(key.Version, hdwallet.Private) &&
+		!bytes.Equal(key.Version, hdwallet.Public) &&
+		!bytes.Equal(key.Version, hdwallet.TestPrivate) &&
+		!bytes.Equal(key.Version, hdwallet.TestPublic) {
 		return fmt.Errorf("unknown key version")
 	}
 
-	if bytes.Equal(key.Version, bip32.PrivateWalletVersion) && !key.IsPrivate {
+	if (bytes.Equal(key.Version, hdwallet.Private) ||
+		bytes.Equal(key.Version, hdwallet.TestPrivate)) && !key.IsPrivate {
 		return fmt.Errorf("public key with private key version mismatch")
 	}
 
-	if bytes.Equal(key.Version, bip32.PublicWalletVersion) && key.IsPrivate {
+	if (bytes.Equal(key.Version, hdwallet.Public) ||
+		bytes.Equal(key.Version, hdwallet.TestPublic)) && key.IsPrivate {
 		return fmt.Errorf("private key with public key version mismatch")
 	}
 

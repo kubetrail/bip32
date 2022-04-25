@@ -15,19 +15,36 @@ import (
 	"github.com/spf13/viper"
 	"github.com/tyler-smith/go-bip32"
 	"github.com/tyler-smith/go-bip39"
+	"github.com/wemeetagain/go-hdwallet"
 	"golang.org/x/term"
 )
 
 func Gen(cmd *cobra.Command, args []string) error {
-	_ = viper.BindPFlag(flags.UsePassphrase, cmd.Flags().Lookup(flags.UsePassphrase))
-	_ = viper.BindPFlag(flags.SkipMnemonicValidation, cmd.Flags().Lookup(flags.SkipMnemonicValidation))
-	_ = viper.BindPFlag(flags.DerivationPath, cmd.Flags().Lookup(flags.DerivationPath))
-	_ = viper.BindPFlag(flags.InputHexSeed, cmd.Flags().Lookup(flags.InputHexSeed))
+	_ = viper.BindPFlag(flags.UsePassphrase, cmd.Flag(flags.UsePassphrase))
+	_ = viper.BindPFlag(flags.SkipMnemonicValidation, cmd.Flag(flags.SkipMnemonicValidation))
+	_ = viper.BindPFlag(flags.DerivationPath, cmd.Flag(flags.DerivationPath))
+	_ = viper.BindPFlag(flags.InputHexSeed, cmd.Flag(flags.InputHexSeed))
+	_ = viper.BindPFlag(flags.Network, cmd.Flag(flags.Network))
 
 	usePassphrase := viper.GetBool(flags.UsePassphrase)
 	skipMnemonicValidation := viper.GetBool(flags.SkipMnemonicValidation)
 	derivationPath := viper.GetString(flags.DerivationPath)
 	inputHexSeed := viper.GetBool(flags.InputHexSeed)
+	network := viper.GetString(flags.Network)
+
+	// setup key versions based on network
+	switch network {
+	case NetworkMainnet:
+		bip32.PrivateWalletVersion = hdwallet.Private
+		bip32.PublicWalletVersion = hdwallet.Public
+	case NetworkTestnet:
+		bip32.PrivateWalletVersion = hdwallet.TestPrivate
+		bip32.PublicWalletVersion = hdwallet.TestPublic
+		hdwallet.Private = hdwallet.TestPrivate
+		hdwallet.Public = hdwallet.TestPublic
+	default:
+		return fmt.Errorf("invalid network: %s", network)
+	}
 
 	prompt, err := getPromptStatus()
 	if err != nil {
@@ -105,13 +122,13 @@ func Gen(cmd *cobra.Command, args []string) error {
 		inputReader := bufio.NewReader(cmd.InOrStdin())
 		hexSeed, err := inputReader.ReadString('\n')
 		if err != nil {
-			return fmt.Errorf("failed to read mnemonic from input: %w", err)
+			return fmt.Errorf("failed to read hex seed from input: %w", err)
 		}
 		hexSeed = strings.Trim(hexSeed, "\n")
 
 		seed, err = hex.DecodeString(hexSeed)
 		if err != nil {
-			return fmt.Errorf("invalid seed: %w", err)
+			return fmt.Errorf("invalid hex seed string: %w", err)
 		}
 	}
 
@@ -156,7 +173,24 @@ func Gen(cmd *cobra.Command, args []string) error {
 	outPrv := fmt.Sprintf("%s", key)
 	outPub := fmt.Sprintf("%s", key.PublicKey())
 
+	wallet, err := hdwallet.StringWallet(outPrv)
+	if err != nil {
+		return fmt.Errorf("failed to create hdwallet: %w", err)
+	}
+
+	if wallet.String() != outPrv {
+		return fmt.Errorf("private key mismatch, \nwallet: %s\n bip32: %s", wallet.String(), outPrv)
+	}
+
+	if wallet.Pub().String() != outPub {
+		return fmt.Errorf("private key mismatch, \nwallet: %s\n bip32: %s", wallet.Pub().String(), outPub)
+	}
+
 	if prompt {
+		if _, err := fmt.Fprintln(cmd.OutOrStdout(), "addr:", wallet.Address()); err != nil {
+			return fmt.Errorf("failed to write key to output: %w", err)
+		}
+
 		if _, err := fmt.Fprintln(cmd.OutOrStdout(), "pub:", outPub); err != nil {
 			return fmt.Errorf("failed to write key to output: %w", err)
 		}
@@ -170,11 +204,13 @@ func Gen(cmd *cobra.Command, args []string) error {
 
 	jb, err := json.Marshal(
 		struct {
-			Prv string `json:"prv,omitempty"`
-			Pub string `json:"pub,omitempty"`
+			Addr string `json:"addr,omitempty"`
+			Prv  string `json:"prv,omitempty"`
+			Pub  string `json:"pub,omitempty"`
 		}{
-			Prv: outPrv,
-			Pub: outPub,
+			Addr: wallet.Address(),
+			Prv:  outPrv,
+			Pub:  outPub,
 		},
 	)
 	if err != nil {

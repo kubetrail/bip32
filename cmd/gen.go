@@ -51,4 +51,6 @@ func init() {
 	f.Bool(flags.UsePassphrase, false, "Prompt for secret passphrase")
 	f.Bool(flags.InputHexSeed, false, "Treat input as hex seed instead of mnemonic")
 	f.Bool(flags.SkipMnemonicValidation, false, "Skip mnemonic validation")
+	// https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#serialization-format
+	f.String(flags.Network, "mainnet", "Network: mainnet or testnet")
 }
