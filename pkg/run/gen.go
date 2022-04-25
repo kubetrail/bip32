@@ -79,12 +79,11 @@ func Gen(cmd *cobra.Command, args []string) error {
 		// then split into words and recombine to a sentence.
 		// this way we ensure mnemonic is representative of the words
 		// entered and their sequence and not presence of extra white spaces
-		if !skipMnemonicValidation {
-			mnemonic = strings.Join(strings.Fields(mnemonic), " ")
+		mnemonic = strings.Join(strings.Fields(mnemonic), " ")
 
-			if !bip39.IsMnemonicValid(mnemonic) {
-				return fmt.Errorf("mnemonic is invalid or please use --skip-mnemonic-validation flag")
-			}
+		if !skipMnemonicValidation &&
+			!bip39.IsMnemonicValid(mnemonic) {
+			return fmt.Errorf("mnemonic is invalid or please use --skip-mnemonic-validation flag")
 		}
 
 		if usePassphrase {
