@@ -1,8 +1,4 @@
-package run
-
-const (
-	AppName = "bip32"
-)
+package keys
 
 const (
 	BigN = "/////////////////////rqu3OavSKA7v9JejNA2QUE="

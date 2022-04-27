@@ -26,6 +26,7 @@ var decodeCmd = &cobra.Command{
 	Short: "Decode keys",
 	Long:  `This command decodes keys revealing internal details`,
 	RunE:  run.Decode,
+	Args:  cobra.MaximumNArgs(1),
 }
 
 func init() {

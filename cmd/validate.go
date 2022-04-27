@@ -26,6 +26,7 @@ var validateCmd = &cobra.Command{
 	Short: "Validate keys",
 	Long:  `This command validates keys`,
 	RunE:  run.Validate,
+	Args:  cobra.MaximumNArgs(1),
 }
 
 func init() {

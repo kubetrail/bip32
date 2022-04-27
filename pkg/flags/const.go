@@ -6,4 +6,5 @@ const (
 	SkipMnemonicValidation = "skip-mnemonic-validation"
 	InputHexSeed           = "input-hex-seed"
 	Network                = "network"
+	MnemonicLanguage       = "mnemonic-language"
 )

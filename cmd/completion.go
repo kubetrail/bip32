@@ -19,7 +19,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/kubetrail/bip32/pkg/run"
+	"github.com/kubetrail/bip32/pkg/app"
 	"github.com/spf13/cobra"
 )
 
@@ -70,7 +70,7 @@ var completionCmd = &cobra.Command{
 	Long: strings.ReplaceAll(
 		longCompletionCmd,
 		"appName",
-		run.AppName),
+		app.AppName),
 	DisableFlagsInUseLine: true,
 	ValidArgs:             []string{"bash", "zsh", "fish", "powershell"},
 	Args:                  cobra.ExactValidArgs(1),
