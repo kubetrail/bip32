@@ -70,7 +70,7 @@ var completionCmd = &cobra.Command{
 	Long: strings.ReplaceAll(
 		longCompletionCmd,
 		"appName",
-		app.AppName),
+		app.Name),
 	DisableFlagsInUseLine: true,
 	ValidArgs:             []string{"bash", "zsh", "fish", "powershell"},
 	Args:                  cobra.ExactValidArgs(1),

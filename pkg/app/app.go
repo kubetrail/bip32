@@ -1,5 +1,5 @@
 package app
 
 const (
-	AppName = "bip32"
+	Name = "bip32"
 )
