@@ -33,6 +33,14 @@ func (g *Key) String() string {
 	return string(jb)
 }
 
+func (g *Key) Print() string {
+	var out string
+	out = fmt.Sprintf("%saddr: %s\n", out, g.Addr)
+	out = fmt.Sprintf("%spub: %s\n", out, g.Pub)
+	out = fmt.Sprintf("%sprv: %s", out, g.Prv)
+	return out
+}
+
 // New generates a new key pair with a seed. The derivation paths
 // can be successive derivation indices such as m, 0, 0h etc.
 // or can be provided as m/0/0h.
