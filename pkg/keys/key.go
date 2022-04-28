@@ -20,8 +20,8 @@ import (
 // to the user
 type Key struct {
 	Addr string `json:"addr,omitempty"`
-	Prv  string `json:"prv,omitempty"`
-	Pub  string `json:"pub,omitempty"`
+	Prv  string `json:"xprv,omitempty"`
+	Pub  string `json:"xpub,omitempty"`
 }
 
 func (g *Key) String() string {
@@ -36,8 +36,10 @@ func (g *Key) String() string {
 func (g *Key) Print() string {
 	var out string
 	out = fmt.Sprintf("%saddr: %s\n", out, g.Addr)
-	out = fmt.Sprintf("%spub: %s\n", out, g.Pub)
-	out = fmt.Sprintf("%sprv: %s", out, g.Prv)
+	out = fmt.Sprintf("%sxpub: %s", out, g.Pub)
+	if len(g.Prv) > 0 {
+		out = fmt.Sprintf("%s\nxprv: %s", out, g.Prv)
+	}
 	return out
 }
 
@@ -61,54 +63,14 @@ func New(seed []byte, derivationPaths ...string) (*Key, error) {
 		return nil, fmt.Errorf("invalid derivation path: %s", derivationPath)
 	}
 
-	for i, part := range parts {
-		if i == 0 {
-			continue
-		}
-
-		if len(part) == 0 {
-			return nil, fmt.Errorf("invalid derivation path at index %d: %s", i, derivationPath)
-		}
-
-		var idx uint32
-		if part[len(part)-1] == '\'' || part[len(part)-1] == 'h' || part[len(part)-1] == 'H' {
-			idx = bip32.FirstHardenedChild
-			part = part[:len(part)-1]
-		}
-
-		index, err := strconv.ParseInt(part, 10, 64)
-		if err != nil || index < 0 {
-			return nil, fmt.Errorf("invalid derivation path at index %d: %s, %w", i, derivationPath, err)
-		}
-
-		idx += uint32(index)
-		key, err = key.NewChildKey(idx)
+	if len(parts) > 1 {
+		key, err = extendedKeyToDerivedExtendedKey(key.B58Serialize(), parts[1:])
 		if err != nil {
-			return nil, fmt.Errorf("failed to generate %d child key: %w", i, err)
+			return nil, fmt.Errorf("failed to derive extended key: %w", err)
 		}
 	}
 
-	prv := fmt.Sprintf("%s", key)
-	pub := fmt.Sprintf("%s", key.PublicKey())
-
-	wallet, err := hdwallet.StringWallet(prv)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create hdwallet: %w", err)
-	}
-
-	if wallet.String() != prv {
-		return nil, fmt.Errorf("private key mismatch, \nwallet: %s\n bip32: %s", wallet.String(), prv)
-	}
-
-	if wallet.Pub().String() != pub {
-		return nil, fmt.Errorf("private key mismatch, \nwallet: %s\n bip32: %s", wallet.Pub().String(), pub)
-	}
-
-	return &Key{
-		Addr: wallet.Address(),
-		Prv:  prv,
-		Pub:  pub,
-	}, nil
+	return extendedKeyToKey(key)
 }
 
 func Prompt(w io.Writer) error {
@@ -142,6 +104,91 @@ func DecodeToJson(keyString string) ([]byte, error) {
 	}
 
 	return jb, nil
+}
+
+func Derive(keyString string, derivationPaths ...string) (*Key, error) {
+	derivationPath := path.Join(derivationPaths...)
+	if len(derivationPath) == 0 {
+		key, err := bip32.B58Deserialize(keyString)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode key: %w", err)
+		}
+
+		return extendedKeyToKey(key)
+	}
+
+	key, err := extendedKeyToDerivedExtendedKey(keyString, derivationPaths)
+	if err != nil {
+		return nil, fmt.Errorf("failed to derive extended key: %w", err)
+	}
+
+	return extendedKeyToKey(key)
+}
+
+func extendedKeyToDerivedExtendedKey(keyString string, derivationPaths []string) (*bip32.Key, error) {
+	derivationPath := path.Join(derivationPaths...)
+	derivationPaths = strings.Split(derivationPath, "/")
+
+	key, err := bip32.B58Deserialize(keyString)
+	if err != nil {
+		return nil, fmt.Errorf("failed to deserialize key: %w", err)
+	}
+
+	for i, part := range derivationPaths {
+		if len(part) == 0 {
+			return nil, fmt.Errorf("invalid derivation path at index %d: %s", i, derivationPath)
+		}
+
+		var idx uint32
+		if part[len(part)-1] == '\'' || part[len(part)-1] == 'h' || part[len(part)-1] == 'H' {
+			idx = bip32.FirstHardenedChild
+			part = part[:len(part)-1]
+		}
+
+		index, err := strconv.ParseInt(part, 10, 64)
+		if err != nil || index < 0 {
+			return nil, fmt.Errorf("invalid derivation path at index %d: %s, %w", i, derivationPath, err)
+		}
+
+		idx += uint32(index)
+		key, err = key.NewChildKey(idx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate %d child key: %w", i, err)
+		}
+	}
+
+	return key, nil
+}
+
+func extendedKeyToKey(key *bip32.Key) (*Key, error) {
+	prv := fmt.Sprintf("%s", key)
+	pub := fmt.Sprintf("%s", key.PublicKey())
+	keyForHdWallet := prv
+	if !key.IsPrivate {
+		prv = ""
+		keyForHdWallet = pub
+	}
+
+	wallet, err := hdwallet.StringWallet(keyForHdWallet)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create hdwallet: %w", err)
+	}
+
+	if key.IsPrivate {
+		if wallet.String() != prv {
+			return nil, fmt.Errorf("private key mismatch, \nwallet: %s\n bip32: %s", wallet.String(), prv)
+		}
+	}
+
+	if wallet.Pub().String() != pub {
+		return nil, fmt.Errorf("private key mismatch, \nwallet: %s\n bip32: %s", wallet.Pub().String(), pub)
+	}
+
+	return &Key{
+		Addr: wallet.Address(),
+		Prv:  prv,
+		Pub:  pub,
+	}, nil
 }
 
 func Validate(keyString string) error {

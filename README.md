@@ -27,8 +27,8 @@ bip32 gen
 ```text
 Enter mnemonic: client sustain stumble prosper pepper maze prison view omit gold organ youth vintage tattoo practice mutual budget excite bubble economy quick conduct spot end
 addr: 15MNqcoicDEFkbTLLPYpDmxo5TDTPcNsQv
-pub: xpub661MyMwAqRbcGVTuch4jj6mRfKpjGHJxMCJJgmurP9TQ6hqppgF644VGUevkyCztRpY4PjssirGR5LPpBSyr8BE8GGWev9qGihrfzGB7TpM
-prv: xprv9s21ZrQH143K41PSWfXjMxph7HzErpb6yyNhtPWEpovRDuWgH8vqWGAndNz1oodj88J8JnaNyQMoL2yNKbYWCubfVTF9ux7aiNJCrF8thw7
+xpub: xpub661MyMwAqRbcGVTuch4jj6mRfKpjGHJxMCJJgmurP9TQ6hqppgF644VGUevkyCztRpY4PjssirGR5LPpBSyr8BE8GGWev9qGihrfzGB7TpM
+xprv: xprv9s21ZrQH143K41PSWfXjMxph7HzErpb6yyNhtPWEpovRDuWgH8vqWGAndNz1oodj88J8JnaNyQMoL2yNKbYWCubfVTF9ux7aiNJCrF8thw7
 ```
 
 Alternatively, pass mnemonic via STDIN pipe:
@@ -40,8 +40,8 @@ echo client sustain stumble prosper pepper maze prison view omit gold organ yout
 ```json
 {
   "addr": "15MNqcoicDEFkbTLLPYpDmxo5TDTPcNsQv",
-  "prv": "xprv9s21ZrQH143K41PSWfXjMxph7HzErpb6yyNhtPWEpovRDuWgH8vqWGAndNz1oodj88J8JnaNyQMoL2yNKbYWCubfVTF9ux7aiNJCrF8thw7",
-  "pub": "xpub661MyMwAqRbcGVTuch4jj6mRfKpjGHJxMCJJgmurP9TQ6hqppgF644VGUevkyCztRpY4PjssirGR5LPpBSyr8BE8GGWev9qGihrfzGB7TpM"
+  "xprv": "xprv9s21ZrQH143K41PSWfXjMxph7HzErpb6yyNhtPWEpovRDuWgH8vqWGAndNz1oodj88J8JnaNyQMoL2yNKbYWCubfVTF9ux7aiNJCrF8thw7",
+  "xpub": "xpub661MyMwAqRbcGVTuch4jj6mRfKpjGHJxMCJJgmurP9TQ6hqppgF644VGUevkyCztRpY4PjssirGR5LPpBSyr8BE8GGWev9qGihrfzGB7TpM"
 }
 ```
 
@@ -74,8 +74,8 @@ bip32 gen --skip-mnemonic-validation
 ```text
 Enter mnemonic: this is an invalid mnemonic
 addr: 18P6a9ciMaVKg7EizNijgzdHbvHY7mQt7x
-pub: xpub661MyMwAqRbcGR8VcxX4xzHck2vkpqYsZpR2yuLLbSp9bLisq1EGB3XXeuz4xhRG5P92Witd9Qefo6qLaPmAXv8JPfcYwYdQMWU9g1DCAk1
-prv: xprv9s21ZrQH143K3w42Wvz4brLtC16GRNq2CbVSBWvj37HAiYPjHTv1dFD3oecPnmevt1oRsvNJc8pKspRVvq2yoehVwbzkek1nHVwDraPCjvc
+xpub: xpub661MyMwAqRbcGR8VcxX4xzHck2vkpqYsZpR2yuLLbSp9bLisq1EGB3XXeuz4xhRG5P92Witd9Qefo6qLaPmAXv8JPfcYwYdQMWU9g1DCAk1
+xprv: xprv9s21ZrQH143K3w42Wvz4brLtC16GRNq2CbVSBWvj37HAiYPjHTv1dFD3oecPnmevt1oRsvNJc8pKspRVvq2yoehVwbzkek1nHVwDraPCjvc
 ```
 
 Use hex seed instead of a mnemonic to generate keys:
@@ -85,8 +85,8 @@ bip32 gen --input-hex-seed
 ```text
 Enter seed in hex: 000102030405060708090a0b0c0d0e0f
 addr: 1Lq9EYuAopf99uMbbCJoyyMpac5iGSn5cZ
-pub: xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8
-prv: xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi
+xpub: xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8
+xprv: xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi
 ```
 
 ## chain derivation path
@@ -101,8 +101,8 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
 ```json
 {
   "addr": "14Zm6hiqcKz4JgBgYzR7yMoZTi7QjRVcfm",
-  "prv": "xprv9s21ZrQH143K48vGoLGRPxgo2JNkJ3J3fqkirQC2zVdk5Dgd5w14S7fRDyHH4dWNHUgkvsvNDCkvAwcSHNAQwhwgNMgZhLtQC63zxwhQmRv",
-  "pub": "xpub661MyMwAqRbcGczjuMoRm6dXaLDEhW1u34gKenbeYqAix21mdUKJyuyu5F1rzYGVxyL6tmgBUAEPrEz92mBXjByMRiJdba9wpnN37RLLAXa"
+  "xprv": "xprv9s21ZrQH143K48vGoLGRPxgo2JNkJ3J3fqkirQC2zVdk5Dgd5w14S7fRDyHH4dWNHUgkvsvNDCkvAwcSHNAQwhwgNMgZhLtQC63zxwhQmRv",
+  "xpub": "xpub661MyMwAqRbcGczjuMoRm6dXaLDEhW1u34gKenbeYqAix21mdUKJyuyu5F1rzYGVxyL6tmgBUAEPrEz92mBXjByMRiJdba9wpnN37RLLAXa"
 }
 ```
 
@@ -115,8 +115,8 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
 ```json
 {
   "addr": "1MRgW1SSkSZVnGwWGm48Q3VYpFhcu7HXey",
-  "prv": "xprv9vB7xEWwNp9kh1wQRfCCQMnZUEG21LpbR9NPCNN1dwhiZkjjeGRnaALmPXCX7SgjFTiCTT6bXes17boXtjq3xLpcDjzEuGLQBM5ohqkao9G",
-  "pub": "xpub69AUMk3qDBi3uW1sXgjCmVjJ2G6WQoYSnNHyzkmdCHEhSZ4tBok37xfFEqHd2AddP56Tqp4o56AePAgCjYdvpW2PU2jbUPFKsav5ut6Ch1m"
+  "xprv": "xprv9vB7xEWwNp9kh1wQRfCCQMnZUEG21LpbR9NPCNN1dwhiZkjjeGRnaALmPXCX7SgjFTiCTT6bXes17boXtjq3xLpcDjzEuGLQBM5ohqkao9G",
+  "xpub": "xpub69AUMk3qDBi3uW1sXgjCmVjJ2G6WQoYSnNHyzkmdCHEhSZ4tBok37xfFEqHd2AddP56Tqp4o56AePAgCjYdvpW2PU2jbUPFKsav5ut6Ch1m"
 }
 ```
 
@@ -129,8 +129,8 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
 ```json
 {
   "addr": "18NvpJbsjLYV3aMGADkD7UVjtyKEG52fW4",
-  "prv": "xprv9xenovaMSsLaNKX8Yz2K1TEZ1b8VymYyji1SL6URcvAMT4EXKQTQxySayFFk2CA6BrhVaBkXWuzTSfNHMEuu1a6gCxZhdc5t9afpx7YRdq4",
-  "pub": "xpub6Be9DS7FHEtsaobbf1ZKNbBHZcxzPEGq6vw38Ut3BFhLKrZfrwmfWmm4pWbqVMyPauABhiVdazRtW9ZBT7fpKR9Pbw5puUAsZaTSRhshGU4"
+  "xprv": "xprv9xenovaMSsLaNKX8Yz2K1TEZ1b8VymYyji1SL6URcvAMT4EXKQTQxySayFFk2CA6BrhVaBkXWuzTSfNHMEuu1a6gCxZhdc5t9afpx7YRdq4",
+  "xpub": "xpub6Be9DS7FHEtsaobbf1ZKNbBHZcxzPEGq6vw38Ut3BFhLKrZfrwmfWmm4pWbqVMyPauABhiVdazRtW9ZBT7fpKR9Pbw5puUAsZaTSRhshGU4"
 }
 ```
 
@@ -146,8 +146,8 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
 ```json
 {
   "addr": "18NvpJbsjLYV3aMGADkD7UVjtyKEG52fW4",
-  "prv": "xprv9xenovaMSsLaNKX8Yz2K1TEZ1b8VymYyji1SL6URcvAMT4EXKQTQxySayFFk2CA6BrhVaBkXWuzTSfNHMEuu1a6gCxZhdc5t9afpx7YRdq4",
-  "pub": "xpub6Be9DS7FHEtsaobbf1ZKNbBHZcxzPEGq6vw38Ut3BFhLKrZfrwmfWmm4pWbqVMyPauABhiVdazRtW9ZBT7fpKR9Pbw5puUAsZaTSRhshGU4"
+  "xprv": "xprv9xenovaMSsLaNKX8Yz2K1TEZ1b8VymYyji1SL6URcvAMT4EXKQTQxySayFFk2CA6BrhVaBkXWuzTSfNHMEuu1a6gCxZhdc5t9afpx7YRdq4",
+  "xpub": "xpub6Be9DS7FHEtsaobbf1ZKNbBHZcxzPEGq6vw38Ut3BFhLKrZfrwmfWmm4pWbqVMyPauABhiVdazRtW9ZBT7fpKR9Pbw5puUAsZaTSRhshGU4"
 }
 ```
 
@@ -160,12 +160,46 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
 ```json
 {
   "addr": "mntt7MgrYMyjpgpssniawPi4kxuwCUphN3",
-  "prv": "tprv8fKjbFtgr9Aey8kfDYspB6rYKiYiDHaz5FvZCWtt6teqEeycJmoAUip2tRRQ2ZYQZJEGaHNHgGaFuWv2UTFqpdNGjbn1Hxow4gRFPpNSMdh",
-  "pub": "tpubDC1mjfvvzWrKrbnT7CYQaWWetk4eNcmteZXLV2wBXATE59ENwAckfDRu4Ygd1rvdNoh6KJ1W86FwCL3nqyX4CrbgfXq8azq79Y3rBjRaSFE"
+  "xprv": "tprv8fKjbFtgr9Aey8kfDYspB6rYKiYiDHaz5FvZCWtt6teqEeycJmoAUip2tRRQ2ZYQZJEGaHNHgGaFuWv2UTFqpdNGjbn1Hxow4gRFPpNSMdh",
+  "xpub": "tpubDC1mjfvvzWrKrbnT7CYQaWWetk4eNcmteZXLV2wBXATE59ENwAckfDRu4Ygd1rvdNoh6KJ1W86FwCL3nqyX4CrbgfXq8azq79Y3rBjRaSFE"
 }
 ```
 
 > Please note that `testnet` keys are currently not tested via any test vector
+
+## derived keys
+Child keys can be derived using parent private or public keys and derivation paths. For instance
+first child key can be derived using an extended public key:
+```bash
+bip32 derive xpub661MyMwAqRbcGaPMRtcCZ91tqAFfLKWdoSbr3PLUAFjVB6sTksegmK4NeEjVWiaYG3e3WgEDNsyGGVkghhjjbsksC7z9R3ZoFYWE3oo2tuG
+```
+```text
+addr: 17gwtovda2WMVgDzJ45KAKLTKCsGY3CToP
+xpub: xpub68CAhn9KZZPV6xY9VgRxazetHmch9k7JbERL1G6ZsDdgsCnNgc8bRVt9cah3WmKzYCAZzHqErz8H7amaQwUjj524BejztnhdHyjsYcCFNCL
+```
+
+Similarly, a private key can be used as input which further allows us to generate hardened keys:
+```bash
+bip32 derive --derivation-path=0h
+```
+```text
+Enter key: xprv9s21ZrQH143K46JtKs5CC15AH8RAvrnnSDgFEzvrbvCWJJYKDLLSDWjtnxhzPX3A1MMH4i2woK1JZRLzWof4MBVndpUNuWTqJGuMApJNLfN
+addr: 18njTHNNqTUYJuFiUM2xYDgcuMnQu8kzPZ
+xpub: xpub68CAhn9TuDvTGgBHyLjLaZJzEBMWgkYNzAsyjprVv2bKzo3tbADu4U3kApixKhaLxML26dDayM37WFZiAb4hbiJueGakp2BpXxTmAip5TTR
+xprv: xprv9uCpJGca4rNA4C6psKCLDRNFg9X2HHpXcwxNwSStMh4M7zik3cueWfjGKZFUQoyeMsikVnsrJVXqFA7VmoaT7cFKfjJ7xFMNCXtjaFkcyZ9
+```
+
+Generation of hardened keys is only allowed for parent private keys.
+
+Needless to say, when empty derivation path is explicitly provided (default is not empty), the
+key outputs itself and also decodes the address
+```bash
+bip32 derive --derivation-path="" xpub661MyMwAqRbcGaPMRtcCZ91tqAFfLKWdoSbr3PLUAFjVB6sTksegmK4NeEjVWiaYG3e3WgEDNsyGGVkghhjjbsksC7z9R3ZoFYWE3oo2tuG
+```
+```text
+addr: 1JvCY3DTGQw6dS2Eo7PKN9C5C1UKGWzqoQ
+xpub: xpub661MyMwAqRbcGaPMRtcCZ91tqAFfLKWdoSbr3PLUAFjVB6sTksegmK4NeEjVWiaYG3e3WgEDNsyGGVkghhjjbsksC7z9R3ZoFYWE3oo2tuG
+```
 
 ## decode keys
 Keys have internal structure such as value, child index, parent signature, fingerprints etc.
