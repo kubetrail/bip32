@@ -9,3 +9,7 @@ const (
 	NetworkMainnet = "mainnet"
 	NetworkTestnet = "testnet"
 )
+
+const (
+	base58CharSet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+)

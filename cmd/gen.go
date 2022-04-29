@@ -60,6 +60,11 @@ BIP-39 proposal: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 Please note that same keys will be generated for mnemonics from different languages
 if the underlying entropy is the same. In other words, keys are always
 generated after translating input mnemonic to English.
+
+Verify output using: http://bip32.org/
+
+References:
+
 `,
 	RunE: run.Gen,
 	Args: cobra.MaximumNArgs(24),

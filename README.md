@@ -168,38 +168,43 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
 > Please note that `testnet` keys are currently not tested via any test vector
 
 ## derived keys
-Child keys can be derived using parent private or public keys and derivation paths. For instance
-first child key can be derived using an extended public key:
+Child keys can be derived using parent private or public keys and derivation paths. 
+
+For instance first child key can be derived using an extended public key:
+```bash
+bip32 derive --derivation-path=m/0 xpub661MyMwAqRbcGaPMRtcCZ91tqAFfLKWdoSbr3PLUAFjVB6sTksegmK4NeEjVWiaYG3e3WgEDNsyGGVkghhjjbsksC7z9R3ZoFYWE3oo2tuG
+```
+```text
+xPub: xpub68CAhn9KZZPV6xY9VgRxazetHmch9k7JbERL1G6ZsDdgsCnNgc8bRVt9cah3WmKzYCAZzHqErz8H7amaQwUjj524BejztnhdHyjsYcCFNCL
+addr: 1J2cWcYafpAYkPGcR6Wu8ybjEUZL4G1Ukw
+pubKeyHex: 024fe10e81436925358a757f41250a3ea69ccdfcb80a15a6e90935ec7ac083fab8
+```
+
+Alternatively, when no derivation path is provided the default behavior is to parse the key as it without
+any child key derivation. This helps to obtain address if needed
 ```bash
 bip32 derive xpub661MyMwAqRbcGaPMRtcCZ91tqAFfLKWdoSbr3PLUAFjVB6sTksegmK4NeEjVWiaYG3e3WgEDNsyGGVkghhjjbsksC7z9R3ZoFYWE3oo2tuG
 ```
 ```text
-addr: 17gwtovda2WMVgDzJ45KAKLTKCsGY3CToP
-xpub: xpub68CAhn9KZZPV6xY9VgRxazetHmch9k7JbERL1G6ZsDdgsCnNgc8bRVt9cah3WmKzYCAZzHqErz8H7amaQwUjj524BejztnhdHyjsYcCFNCL
+xPub: xpub661MyMwAqRbcGaPMRtcCZ91tqAFfLKWdoSbr3PLUAFjVB6sTksegmK4NeEjVWiaYG3e3WgEDNsyGGVkghhjjbsksC7z9R3ZoFYWE3oo2tuG
+addr: 14nATe3WojN6ojChza1TnzHWhmPUUs7vkX
+pubKeyHex: 0367117eab2ef405c130c44f98b1e65be9047dd152811fb06550a66fd4889e2b6a
 ```
 
 Similarly, a private key can be used as input which further allows us to generate hardened keys:
 ```bash
-bip32 derive --derivation-path=0h
+bip32 derive --derivation-path=m/0h
 ```
 ```text
 Enter key: xprv9s21ZrQH143K46JtKs5CC15AH8RAvrnnSDgFEzvrbvCWJJYKDLLSDWjtnxhzPX3A1MMH4i2woK1JZRLzWof4MBVndpUNuWTqJGuMApJNLfN
-addr: 18njTHNNqTUYJuFiUM2xYDgcuMnQu8kzPZ
-xpub: xpub68CAhn9TuDvTGgBHyLjLaZJzEBMWgkYNzAsyjprVv2bKzo3tbADu4U3kApixKhaLxML26dDayM37WFZiAb4hbiJueGakp2BpXxTmAip5TTR
-xprv: xprv9uCpJGca4rNA4C6psKCLDRNFg9X2HHpXcwxNwSStMh4M7zik3cueWfjGKZFUQoyeMsikVnsrJVXqFA7VmoaT7cFKfjJ7xFMNCXtjaFkcyZ9
+xPrv: xprv9uCpJGca4rNA4C6psKCLDRNFg9X2HHpXcwxNwSStMh4M7zik3cueWfjGKZFUQoyeMsikVnsrJVXqFA7VmoaT7cFKfjJ7xFMNCXtjaFkcyZ9
+xPub: xpub68CAhn9TuDvTGgBHyLjLaZJzEBMWgkYNzAsyjprVv2bKzo3tbADu4U3kApixKhaLxML26dDayM37WFZiAb4hbiJueGakp2BpXxTmAip5TTR
+addr: 1NwX8P2KBAhJnMDpicqjibvYS63a2L3gcD
+prvKeyWif: L4YxuN6KWdMpL5reFZ4JmyNX4oDYjR8ztPnZti31b25kEsELpraQ
+pubKeyHex: 031527dba89db3032ccc4ae594aa4b775c0b99c743069f08b0a5f9e91fcd9d1180
 ```
 
 Generation of hardened keys is only allowed for parent private keys.
-
-Needless to say, when empty derivation path is explicitly provided (default is not empty), the
-key outputs itself and also decodes the address
-```bash
-bip32 derive --derivation-path="" xpub661MyMwAqRbcGaPMRtcCZ91tqAFfLKWdoSbr3PLUAFjVB6sTksegmK4NeEjVWiaYG3e3WgEDNsyGGVkghhjjbsksC7z9R3ZoFYWE3oo2tuG
-```
-```text
-addr: 1JvCY3DTGQw6dS2Eo7PKN9C5C1UKGWzqoQ
-xpub: xpub661MyMwAqRbcGaPMRtcCZ91tqAFfLKWdoSbr3PLUAFjVB6sTksegmK4NeEjVWiaYG3e3WgEDNsyGGVkghhjjbsksC7z9R3ZoFYWE3oo2tuG
-```
 
 ## decode keys
 Keys have internal structure such as value, child index, parent signature, fingerprints etc.

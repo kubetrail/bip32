@@ -4,24 +4,69 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"math/big"
-	"path"
 	"strconv"
 	"strings"
 
+	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcutil"
 	"github.com/tyler-smith/go-bip32"
-	"github.com/wemeetagain/go-hdwallet"
+	"gopkg.in/yaml.v3"
 )
+
+// base58CharMap is the lookup hashmap for base58 char set
+var base58CharMap map[rune]struct{}
+
+func init() {
+	base58CharMap = make(map[rune]struct{})
+	for _, r := range base58CharSet {
+		base58CharMap[r] = struct{}{}
+	}
+}
+
+var (
+	NetworkMainNetVersionPublic  []byte
+	NetworkMainNetVersionPrivate []byte
+	NetworkTestNetVersionPublic  []byte
+	NetworkTestNetVersionPrivate []byte
+)
+
+func init() {
+	NetworkMainNetVersionPublic, _ = hex.DecodeString("0488B21E")
+	NetworkMainNetVersionPrivate, _ = hex.DecodeString("0488ADE4")
+	NetworkTestNetVersionPublic, _ = hex.DecodeString("043587CF")
+	NetworkTestNetVersionPrivate, _ = hex.DecodeString("04358394")
+}
+
+// IsValidBase58String checks if all chars in input string
+// belong to valid base58 char set
+func IsValidBase58String(input string) bool {
+	if len(input) == 0 {
+		return false
+	}
+
+	for _, r := range input {
+		if _, ok := base58CharMap[r]; !ok {
+			return false
+		}
+	}
+
+	return true
+}
 
 // Key represents BIP32 key components that are presented
 // to the user
 type Key struct {
-	Addr string `json:"addr,omitempty"`
-	Prv  string `json:"xprv,omitempty"`
-	Pub  string `json:"xpub,omitempty"`
+	XPrv      string `json:"xPrv,omitempty" yaml:"xPrv,omitempty"`
+	XPub      string `json:"xPub,omitempty" yaml:"xPub,omitempty"`
+	Addr      string `json:"addr,omitempty" yaml:"addr,omitempty"`
+	PrvKeyWif string `json:"prvKeyWif,omitempty" yaml:"prvKeyWif,omitempty"`
+	PubKeyHex string `json:"pubKeyHex,omitempty" yaml:"pubKeyHex,omitempty"`
 }
 
 func (g *Key) String() string {
@@ -34,22 +79,28 @@ func (g *Key) String() string {
 }
 
 func (g *Key) Print() string {
-	var out string
-	out = fmt.Sprintf("%saddr: %s\n", out, g.Addr)
-	out = fmt.Sprintf("%sxpub: %s", out, g.Pub)
-	if len(g.Prv) > 0 {
-		out = fmt.Sprintf("%s\nxprv: %s", out, g.Prv)
+	b, err := yaml.Marshal(g)
+	if err != nil {
+		return err.Error()
 	}
-	return out
+
+	return string(b)
 }
 
 // New generates a new key pair with a seed. The derivation paths
 // can be successive derivation indices such as m, 0, 0h etc.
 // or can be provided as m/0/0h.
-func New(seed []byte, derivationPaths ...string) (*Key, error) {
-	derivationPath := path.Join(derivationPaths...)
-	if len(derivationPath) == 0 {
-		derivationPath = "m"
+func New(seed []byte, network, derivationPath string) (*Key, error) {
+	// setup key versions based on network
+	switch network {
+	case NetworkMainnet:
+		bip32.PrivateWalletVersion = NetworkMainNetVersionPrivate
+		bip32.PublicWalletVersion = NetworkMainNetVersionPublic
+	case NetworkTestnet:
+		bip32.PrivateWalletVersion = NetworkTestNetVersionPrivate
+		bip32.PublicWalletVersion = NetworkTestNetVersionPublic
+	default:
+		return nil, fmt.Errorf("invalid or unsupported network: %s", network)
 	}
 
 	key, err := bip32.NewMasterKey(seed)
@@ -57,17 +108,9 @@ func New(seed []byte, derivationPaths ...string) (*Key, error) {
 		return nil, fmt.Errorf("failed to generate root key: %w", err)
 	}
 
-	derivationPath = strings.Trim(derivationPath, "/")
-	parts := strings.Split(derivationPath, "/")
-	if len(parts) == 0 || parts[0] != "m" {
-		return nil, fmt.Errorf("invalid derivation path: %s", derivationPath)
-	}
-
-	if len(parts) > 1 {
-		key, err = extendedKeyToDerivedExtendedKey(key.B58Serialize(), parts[1:])
-		if err != nil {
-			return nil, fmt.Errorf("failed to derive extended key: %w", err)
-		}
+	key, err = extendedKeyToDerivedExtendedKey(key.B58Serialize(), derivationPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to derive extended key: %w", err)
 	}
 
 	return extendedKeyToKey(key)
@@ -106,18 +149,8 @@ func DecodeToJson(keyString string) ([]byte, error) {
 	return jb, nil
 }
 
-func Derive(keyString string, derivationPaths ...string) (*Key, error) {
-	derivationPath := path.Join(derivationPaths...)
-	if len(derivationPath) == 0 {
-		key, err := bip32.B58Deserialize(keyString)
-		if err != nil {
-			return nil, fmt.Errorf("failed to decode key: %w", err)
-		}
-
-		return extendedKeyToKey(key)
-	}
-
-	key, err := extendedKeyToDerivedExtendedKey(keyString, derivationPaths)
+func Derive(keyString string, derivationPath string) (*Key, error) {
+	key, err := extendedKeyToDerivedExtendedKey(keyString, derivationPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to derive extended key: %w", err)
 	}
@@ -125,22 +158,31 @@ func Derive(keyString string, derivationPaths ...string) (*Key, error) {
 	return extendedKeyToKey(key)
 }
 
-func extendedKeyToDerivedExtendedKey(keyString string, derivationPaths []string) (*bip32.Key, error) {
-	derivationPath := path.Join(derivationPaths...)
-	derivationPaths = strings.Split(derivationPath, "/")
+func extendedKeyToDerivedExtendedKey(keyString, derivationPath string) (*bip32.Key, error) {
+	derivationPath = strings.Trim(strings.ToLower(derivationPath), "/")
+	if len(derivationPath) == 0 {
+		derivationPath = "m"
+	}
+
+	parts := strings.Split(derivationPath, "/")
+	if len(parts) == 0 {
+		return nil, fmt.Errorf("invalid derivation path, must not be empty")
+	}
+	if parts[0] != "m" {
+		return nil, fmt.Errorf("invalid derivation path, must start with m: %s", derivationPath)
+	}
 
 	key, err := bip32.B58Deserialize(keyString)
 	if err != nil {
 		return nil, fmt.Errorf("failed to deserialize key: %w", err)
 	}
 
-	for i, part := range derivationPaths {
-		if len(part) == 0 {
-			return nil, fmt.Errorf("invalid derivation path at index %d: %s", i, derivationPath)
+	for i, part := range parts {
+		if i == 0 {
+			continue
 		}
-
 		var idx uint32
-		if part[len(part)-1] == '\'' || part[len(part)-1] == 'h' || part[len(part)-1] == 'H' {
+		if part[len(part)-1] == '\'' || part[len(part)-1] == 'h' {
 			idx = bip32.FirstHardenedChild
 			part = part[:len(part)-1]
 		}
@@ -161,33 +203,66 @@ func extendedKeyToDerivedExtendedKey(keyString string, derivationPaths []string)
 }
 
 func extendedKeyToKey(key *bip32.Key) (*Key, error) {
-	prv := fmt.Sprintf("%s", key)
-	pub := fmt.Sprintf("%s", key.PublicKey())
-	keyForHdWallet := prv
-	if !key.IsPrivate {
-		prv = ""
-		keyForHdWallet = pub
+	params := &chaincfg.MainNetParams
+	if bytes.Equal(key.Version, NetworkTestNetVersionPublic) ||
+		bytes.Equal(key.Version, NetworkTestNetVersionPrivate) {
+		params = &chaincfg.TestNet3Params
 	}
 
-	wallet, err := hdwallet.StringWallet(keyForHdWallet)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create hdwallet: %w", err)
-	}
+	var pubKey *bip32.Key
+	var prvKey *bip32.Key
+
+	var prvKeyString string
+	var pubKeyString string
+
+	var addr string
+	var prvKeyWif string
 
 	if key.IsPrivate {
-		if wallet.String() != prv {
-			return nil, fmt.Errorf("private key mismatch, \nwallet: %s\n bip32: %s", wallet.String(), prv)
-		}
+		prvKey = key
+		pubKey = key.PublicKey()
+	} else {
+		pubKey = key
 	}
 
-	if wallet.Pub().String() != pub {
-		return nil, fmt.Errorf("private key mismatch, \nwallet: %s\n bip32: %s", wallet.Pub().String(), pub)
+	pubKeyString = fmt.Sprintf("%s", pubKey)
+
+	if prvKey != nil {
+		prvKeyString = fmt.Sprintf("%s", prvKey)
+
+		prv, _ := btcec.PrivKeyFromBytes(btcec.S256(), prvKey.Key)
+		wif, err := btcutil.NewWIF(prv, params, true)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate wif formatted prv key: %w", err)
+		}
+		prvKeyWif = wif.String()
+
+		serializedPubKey := wif.SerializePubKey()
+		addressPubKey, err := btcutil.NewAddressPubKey(serializedPubKey, params)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate new address from pub key: %w", err)
+		}
+
+		addr = addressPubKey.EncodeAddress()
+	} else {
+		p, err := btcec.ParsePubKey(pubKey.Key, btcec.S256())
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse pubkey: %w", err)
+		}
+		addressPubKey, err := btcutil.NewAddressPubKey(p.SerializeCompressed(), params)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate new address from pub key: %w", err)
+		}
+
+		addr = addressPubKey.EncodeAddress()
 	}
 
 	return &Key{
-		Addr: wallet.Address(),
-		Prv:  prv,
-		Pub:  pub,
+		XPrv:      prvKeyString,
+		XPub:      pubKeyString,
+		Addr:      addr,
+		PrvKeyWif: prvKeyWif,
+		PubKeyHex: hex.EncodeToString(pubKey.Key),
 	}, nil
 }
 
@@ -197,20 +272,20 @@ func Validate(keyString string) error {
 		return fmt.Errorf("failed to decode key: %w", err)
 	}
 
-	if !bytes.Equal(key.Version, hdwallet.Private) &&
-		!bytes.Equal(key.Version, hdwallet.Public) &&
-		!bytes.Equal(key.Version, hdwallet.TestPrivate) &&
-		!bytes.Equal(key.Version, hdwallet.TestPublic) {
+	if !bytes.Equal(key.Version, NetworkMainNetVersionPublic) &&
+		!bytes.Equal(key.Version, NetworkMainNetVersionPrivate) &&
+		!bytes.Equal(key.Version, NetworkTestNetVersionPublic) &&
+		!bytes.Equal(key.Version, NetworkTestNetVersionPrivate) {
 		return fmt.Errorf("unknown key version")
 	}
 
-	if (bytes.Equal(key.Version, hdwallet.Private) ||
-		bytes.Equal(key.Version, hdwallet.TestPrivate)) && !key.IsPrivate {
+	if (bytes.Equal(key.Version, NetworkMainNetVersionPrivate) ||
+		bytes.Equal(key.Version, NetworkTestNetVersionPrivate)) && !key.IsPrivate {
 		return fmt.Errorf("public key with private key version mismatch")
 	}
 
-	if (bytes.Equal(key.Version, hdwallet.Public) ||
-		bytes.Equal(key.Version, hdwallet.TestPublic)) && key.IsPrivate {
+	if (bytes.Equal(key.Version, NetworkMainNetVersionPublic) ||
+		bytes.Equal(key.Version, NetworkTestNetVersionPublic)) && key.IsPrivate {
 		return fmt.Errorf("private key with public key version mismatch")
 	}
 

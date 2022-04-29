@@ -36,5 +36,5 @@ func init() {
 	rootCmd.AddCommand(deriveCmd)
 	f := deriveCmd.Flags()
 
-	f.String(flags.DerivationPath, "0", "Chain Derivation path")
+	f.String(flags.DerivationPath, "m", "Chain Derivation path")
 }

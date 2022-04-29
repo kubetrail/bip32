@@ -42,7 +42,7 @@ func Derive(cmd *cobra.Command, args []string) error {
 	}
 
 	if prompt {
-		if _, err := fmt.Fprintln(cmd.OutOrStdout(), key.Print()); err != nil {
+		if _, err := fmt.Fprint(cmd.OutOrStdout(), key.Print()); err != nil {
 			return fmt.Errorf("failed to write key to output: %w", err)
 		}
 

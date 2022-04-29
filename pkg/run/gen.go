@@ -12,8 +12,6 @@ import (
 	"github.com/kubetrail/bip39/pkg/seeds"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/tyler-smith/go-bip32"
-	"github.com/wemeetagain/go-hdwallet"
 )
 
 func Gen(cmd *cobra.Command, args []string) error {
@@ -30,20 +28,6 @@ func Gen(cmd *cobra.Command, args []string) error {
 	inputHexSeed := viper.GetBool(flags.InputHexSeed)
 	network := viper.GetString(flags.Network)
 	language := viper.GetString(flags.MnemonicLanguage)
-
-	// setup key versions based on network
-	switch network {
-	case keys.NetworkMainnet:
-		bip32.PrivateWalletVersion = hdwallet.Private
-		bip32.PublicWalletVersion = hdwallet.Public
-	case keys.NetworkTestnet:
-		bip32.PrivateWalletVersion = hdwallet.TestPrivate
-		bip32.PublicWalletVersion = hdwallet.TestPublic
-		hdwallet.Private = hdwallet.TestPrivate
-		hdwallet.Public = hdwallet.TestPublic
-	default:
-		return fmt.Errorf("invalid network: %s", network)
-	}
 
 	prompt, err := prompts.Status()
 	if err != nil {
@@ -114,13 +98,13 @@ func Gen(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	key, err := keys.New(seed, derivationPath)
+	key, err := keys.New(seed, network, derivationPath)
 	if err != nil {
 		return fmt.Errorf("failed to generate key: %w", err)
 	}
 
 	if prompt {
-		if _, err := fmt.Fprintln(cmd.OutOrStdout(), key.Print()); err != nil {
+		if _, err := fmt.Fprint(cmd.OutOrStdout(), key.Print()); err != nil {
 			return fmt.Errorf("failed to write key to output: %w", err)
 		}
 
