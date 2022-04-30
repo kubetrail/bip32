@@ -75,6 +75,7 @@ func IsValidBase58String(input string) bool {
 // Key represents BIP32 key components that are presented
 // to the user
 type Key struct {
+	Seed      string `json:"seed,omitempty" yaml:"seed,omitempty"`
 	XPrv      string `json:"xPrv,omitempty" yaml:"xPrv,omitempty"`
 	XPub      string `json:"xPub,omitempty" yaml:"xPub,omitempty"`
 	PrvKeyWif string `json:"prvKeyWif,omitempty" yaml:"prvKeyWif,omitempty"`
@@ -119,17 +120,24 @@ func New(seed []byte, network, derivationPath string) (*Key, error) {
 	bip32.PrivateWalletVersion = keyVersions[path.Join(CoinTypeBtc, network, KeyTypePrv)]
 	bip32.PublicWalletVersion = keyVersions[path.Join(CoinTypeBtc, network, KeyTypePub)]
 
-	key, err := bip32.NewMasterKey(seed)
+	xKey, err := bip32.NewMasterKey(seed)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate root key: %w", err)
 	}
 
-	key, err = extendedKeyToDerivedExtendedKey(key, derivationPath)
+	xKey, err = extendedKeyToDerivedExtendedKey(xKey, derivationPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to derive extended key: %w", err)
 	}
 
-	return extendedKeyToKey(key)
+	key, err := extendedKeyToKey(xKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert extended key for output: %w", err)
+	}
+
+	key.Seed = hex.EncodeToString(seed)
+
+	return key, nil
 }
 
 func Prompt(w io.Writer) error {
@@ -179,7 +187,7 @@ func DecodePublicHex(keyString string) ([]byte, error) {
 		CoinType:  CoinTypeBtc,
 	}
 
-	jb, err := json.MarshalIndent(key, "", "  ")
+	jb, err := json.Marshal(key)
 	if err != nil {
 		return nil, fmt.Errorf("failed to serialize key output: %w", err)
 	}
@@ -223,7 +231,7 @@ func DecodePrivateWifKey(keyString string) ([]byte, error) {
 		CoinType:  CoinTypeBtc,
 	}
 
-	jb, err := json.MarshalIndent(key, "", "  ")
+	jb, err := json.Marshal(key)
 	if err != nil {
 		return nil, fmt.Errorf("failed to serialize key output: %w", err)
 	}
@@ -237,7 +245,7 @@ func DecodeExtendedKey(keyString string) ([]byte, error) {
 		return nil, fmt.Errorf("failed to self derive extended key: %w", err)
 	}
 
-	jb, err := json.MarshalIndent(key, "", "  ")
+	jb, err := json.Marshal(key)
 	if err != nil {
 		return nil, fmt.Errorf("failed to serialize key output: %w", err)
 	}
