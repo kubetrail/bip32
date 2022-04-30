@@ -26,9 +26,11 @@ bip32 gen
 ```
 ```text
 Enter mnemonic: client sustain stumble prosper pepper maze prison view omit gold organ youth vintage tattoo practice mutual budget excite bubble economy quick conduct spot end
-addr: 15MNqcoicDEFkbTLLPYpDmxo5TDTPcNsQv
-xpub: xpub661MyMwAqRbcGVTuch4jj6mRfKpjGHJxMCJJgmurP9TQ6hqppgF644VGUevkyCztRpY4PjssirGR5LPpBSyr8BE8GGWev9qGihrfzGB7TpM
-xprv: xprv9s21ZrQH143K41PSWfXjMxph7HzErpb6yyNhtPWEpovRDuWgH8vqWGAndNz1oodj88J8JnaNyQMoL2yNKbYWCubfVTF9ux7aiNJCrF8thw7
+xPrv: xprv9s21ZrQH143K41PSWfXjMxph7HzErpb6yyNhtPWEpovRDuWgH8vqWGAndNz1oodj88J8JnaNyQMoL2yNKbYWCubfVTF9ux7aiNJCrF8thw7
+xPub: xpub661MyMwAqRbcGVTuch4jj6mRfKpjGHJxMCJJgmurP9TQ6hqppgF644VGUevkyCztRpY4PjssirGR5LPpBSyr8BE8GGWev9qGihrfzGB7TpM
+addr: 19JduQ1dmpeb3V9d1rKfyb8Wkg814GXL83
+prvKeyWif: L4XzfA8957Wu6foyk1ZYcPJYxv444q6F7gZKKy9BHXMLTVzb1w2N
+pubKeyHex: 03528f86fa0f2f0f90011a278a7f96800f9c2016c5ee257b3234af66420320a55e
 ```
 
 Alternatively, pass mnemonic via STDIN pipe:
@@ -39,9 +41,11 @@ echo client sustain stumble prosper pepper maze prison view omit gold organ yout
 ```
 ```json
 {
-  "addr": "15MNqcoicDEFkbTLLPYpDmxo5TDTPcNsQv",
-  "xprv": "xprv9s21ZrQH143K41PSWfXjMxph7HzErpb6yyNhtPWEpovRDuWgH8vqWGAndNz1oodj88J8JnaNyQMoL2yNKbYWCubfVTF9ux7aiNJCrF8thw7",
-  "xpub": "xpub661MyMwAqRbcGVTuch4jj6mRfKpjGHJxMCJJgmurP9TQ6hqppgF644VGUevkyCztRpY4PjssirGR5LPpBSyr8BE8GGWev9qGihrfzGB7TpM"
+  "xPrv": "xprv9s21ZrQH143K41PSWfXjMxph7HzErpb6yyNhtPWEpovRDuWgH8vqWGAndNz1oodj88J8JnaNyQMoL2yNKbYWCubfVTF9ux7aiNJCrF8thw7",
+  "xPub": "xpub661MyMwAqRbcGVTuch4jj6mRfKpjGHJxMCJJgmurP9TQ6hqppgF644VGUevkyCztRpY4PjssirGR5LPpBSyr8BE8GGWev9qGihrfzGB7TpM",
+  "addr": "19JduQ1dmpeb3V9d1rKfyb8Wkg814GXL83",
+  "prvKeyWif": "L4XzfA8957Wu6foyk1ZYcPJYxv444q6F7gZKKy9BHXMLTVzb1w2N",
+  "pubKeyHex": "03528f86fa0f2f0f90011a278a7f96800f9c2016c5ee257b3234af66420320a55e"
 }
 ```
 
@@ -69,13 +73,14 @@ Error: mnemonic is invalid or please use --skip-mnemonic-validation flag
 ```
 
 ```bash
-bip32 gen --skip-mnemonic-validation
+bip32 gen --skip-mnemonic-validation this is an invalid mnemonic
 ```
 ```text
-Enter mnemonic: this is an invalid mnemonic
-addr: 18P6a9ciMaVKg7EizNijgzdHbvHY7mQt7x
-xpub: xpub661MyMwAqRbcGR8VcxX4xzHck2vkpqYsZpR2yuLLbSp9bLisq1EGB3XXeuz4xhRG5P92Witd9Qefo6qLaPmAXv8JPfcYwYdQMWU9g1DCAk1
-xprv: xprv9s21ZrQH143K3w42Wvz4brLtC16GRNq2CbVSBWvj37HAiYPjHTv1dFD3oecPnmevt1oRsvNJc8pKspRVvq2yoehVwbzkek1nHVwDraPCjvc
+xPrv: xprv9s21ZrQH143K3w42Wvz4brLtC16GRNq2CbVSBWvj37HAiYPjHTv1dFD3oecPnmevt1oRsvNJc8pKspRVvq2yoehVwbzkek1nHVwDraPCjvc
+xPub: xpub661MyMwAqRbcGR8VcxX4xzHck2vkpqYsZpR2yuLLbSp9bLisq1EGB3XXeuz4xhRG5P92Witd9Qefo6qLaPmAXv8JPfcYwYdQMWU9g1DCAk1
+addr: 1CcNBXdpmBMRYaNz8Czgn14o584zjaZXeK
+prvKeyWif: L3USrmAFQ1Bc7VoPH4hLAiDoBGJpMTVsWpa78yaiDq7EdG74jTPN
+pubKeyHex: 02e7cfa509815cfd952b4df4ca677dc1f18551fef158b850703aafd4093c066c67
 ```
 
 Use hex seed instead of a mnemonic to generate keys:
@@ -84,9 +89,11 @@ bip32 gen --input-hex-seed
 ```
 ```text
 Enter seed in hex: 000102030405060708090a0b0c0d0e0f
-addr: 1Lq9EYuAopf99uMbbCJoyyMpac5iGSn5cZ
-xpub: xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8
-xprv: xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi
+xPrv: xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi
+xPub: xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8
+addr: 15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma
+prvKeyWif: L52XzL2cMkHxqxBXRyEpnPQZGUs3uKiL3R11XbAdHigRzDozKZeW
+pubKeyHex: 0339a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2
 ```
 
 ## chain derivation path
@@ -100,9 +107,11 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
 ```
 ```json
 {
-  "addr": "14Zm6hiqcKz4JgBgYzR7yMoZTi7QjRVcfm",
-  "xprv": "xprv9s21ZrQH143K48vGoLGRPxgo2JNkJ3J3fqkirQC2zVdk5Dgd5w14S7fRDyHH4dWNHUgkvsvNDCkvAwcSHNAQwhwgNMgZhLtQC63zxwhQmRv",
-  "xpub": "xpub661MyMwAqRbcGczjuMoRm6dXaLDEhW1u34gKenbeYqAix21mdUKJyuyu5F1rzYGVxyL6tmgBUAEPrEz92mBXjByMRiJdba9wpnN37RLLAXa"
+  "xPrv": "xprv9s21ZrQH143K48vGoLGRPxgo2JNkJ3J3fqkirQC2zVdk5Dgd5w14S7fRDyHH4dWNHUgkvsvNDCkvAwcSHNAQwhwgNMgZhLtQC63zxwhQmRv",
+  "xPub": "xpub661MyMwAqRbcGczjuMoRm6dXaLDEhW1u34gKenbeYqAix21mdUKJyuyu5F1rzYGVxyL6tmgBUAEPrEz92mBXjByMRiJdba9wpnN37RLLAXa",
+  "addr": "1GpWFBBE37FQumRkrVUL6HB1bqSWCuYsKt",
+  "prvKeyWif": "KwrAWXgyy1L75ZBRp1PzHj2aWBoYcddgrEMfF6iBJFuw8adwRNLu",
+  "pubKeyHex": "026f6fedc9240f61daa9c7144b682a430a3a1366576f840bf2d070101fcbc9a02d"
 }
 ```
 
@@ -114,9 +123,11 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
 ```
 ```json
 {
-  "addr": "1MRgW1SSkSZVnGwWGm48Q3VYpFhcu7HXey",
-  "xprv": "xprv9vB7xEWwNp9kh1wQRfCCQMnZUEG21LpbR9NPCNN1dwhiZkjjeGRnaALmPXCX7SgjFTiCTT6bXes17boXtjq3xLpcDjzEuGLQBM5ohqkao9G",
-  "xpub": "xpub69AUMk3qDBi3uW1sXgjCmVjJ2G6WQoYSnNHyzkmdCHEhSZ4tBok37xfFEqHd2AddP56Tqp4o56AePAgCjYdvpW2PU2jbUPFKsav5ut6Ch1m"
+  "xPrv": "xprv9vB7xEWwNp9kh1wQRfCCQMnZUEG21LpbR9NPCNN1dwhiZkjjeGRnaALmPXCX7SgjFTiCTT6bXes17boXtjq3xLpcDjzEuGLQBM5ohqkao9G",
+  "xPub": "xpub69AUMk3qDBi3uW1sXgjCmVjJ2G6WQoYSnNHyzkmdCHEhSZ4tBok37xfFEqHd2AddP56Tqp4o56AePAgCjYdvpW2PU2jbUPFKsav5ut6Ch1m",
+  "addr": "1KvwpccVR6CsN3ve2LZpxkSZ5od5262b75",
+  "prvKeyWif": "KwFMsuZ3pmk7ebtbTiPirTpdcPkS6wvnSazU3bvixwiCw1bNQLhG",
+  "pubKeyHex": "039382d2b6003446792d2917f7ac4b3edf079a1a94dd4eb010dc25109dda680a9d"
 }
 ```
 
@@ -128,9 +139,11 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
 ```
 ```json
 {
-  "addr": "18NvpJbsjLYV3aMGADkD7UVjtyKEG52fW4",
-  "xprv": "xprv9xenovaMSsLaNKX8Yz2K1TEZ1b8VymYyji1SL6URcvAMT4EXKQTQxySayFFk2CA6BrhVaBkXWuzTSfNHMEuu1a6gCxZhdc5t9afpx7YRdq4",
-  "xpub": "xpub6Be9DS7FHEtsaobbf1ZKNbBHZcxzPEGq6vw38Ut3BFhLKrZfrwmfWmm4pWbqVMyPauABhiVdazRtW9ZBT7fpKR9Pbw5puUAsZaTSRhshGU4"
+  "xPrv": "xprv9xenovaMSsLaNKX8Yz2K1TEZ1b8VymYyji1SL6URcvAMT4EXKQTQxySayFFk2CA6BrhVaBkXWuzTSfNHMEuu1a6gCxZhdc5t9afpx7YRdq4",
+  "xPub": "xpub6Be9DS7FHEtsaobbf1ZKNbBHZcxzPEGq6vw38Ut3BFhLKrZfrwmfWmm4pWbqVMyPauABhiVdazRtW9ZBT7fpKR9Pbw5puUAsZaTSRhshGU4",
+  "addr": "19q3NgbmofP5eB62zNawU68pxVwopdHDZ2",
+  "prvKeyWif": "KzeBeJFoxNctzErrKH9GqBS8VGakySW2bQ33sE43X64aRSjxh7Ei",
+  "pubKeyHex": "028fb7e34b1d9f41c1b7c4a9f93d75a18b4bf0ef9537a270a4018e43214448ac0d"
 }
 ```
 
@@ -145,9 +158,11 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
 ```
 ```json
 {
-  "addr": "18NvpJbsjLYV3aMGADkD7UVjtyKEG52fW4",
-  "xprv": "xprv9xenovaMSsLaNKX8Yz2K1TEZ1b8VymYyji1SL6URcvAMT4EXKQTQxySayFFk2CA6BrhVaBkXWuzTSfNHMEuu1a6gCxZhdc5t9afpx7YRdq4",
-  "xpub": "xpub6Be9DS7FHEtsaobbf1ZKNbBHZcxzPEGq6vw38Ut3BFhLKrZfrwmfWmm4pWbqVMyPauABhiVdazRtW9ZBT7fpKR9Pbw5puUAsZaTSRhshGU4"
+  "xPrv": "xprv9xenovaMSsLaNKX8Yz2K1TEZ1b8VymYyji1SL6URcvAMT4EXKQTQxySayFFk2CA6BrhVaBkXWuzTSfNHMEuu1a6gCxZhdc5t9afpx7YRdq4",
+  "xPub": "xpub6Be9DS7FHEtsaobbf1ZKNbBHZcxzPEGq6vw38Ut3BFhLKrZfrwmfWmm4pWbqVMyPauABhiVdazRtW9ZBT7fpKR9Pbw5puUAsZaTSRhshGU4",
+  "addr": "19q3NgbmofP5eB62zNawU68pxVwopdHDZ2",
+  "prvKeyWif": "KzeBeJFoxNctzErrKH9GqBS8VGakySW2bQ33sE43X64aRSjxh7Ei",
+  "pubKeyHex": "028fb7e34b1d9f41c1b7c4a9f93d75a18b4bf0ef9537a270a4018e43214448ac0d"
 }
 ```
 
@@ -159,9 +174,11 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
 ```
 ```json
 {
-  "addr": "mntt7MgrYMyjpgpssniawPi4kxuwCUphN3",
-  "xprv": "tprv8fKjbFtgr9Aey8kfDYspB6rYKiYiDHaz5FvZCWtt6teqEeycJmoAUip2tRRQ2ZYQZJEGaHNHgGaFuWv2UTFqpdNGjbn1Hxow4gRFPpNSMdh",
-  "xpub": "tpubDC1mjfvvzWrKrbnT7CYQaWWetk4eNcmteZXLV2wBXATE59ENwAckfDRu4Ygd1rvdNoh6KJ1W86FwCL3nqyX4CrbgfXq8azq79Y3rBjRaSFE"
+  "xPrv": "tprv8fKjbFtgr9Aey8kfDYspB6rYKiYiDHaz5FvZCWtt6teqEeycJmoAUip2tRRQ2ZYQZJEGaHNHgGaFuWv2UTFqpdNGjbn1Hxow4gRFPpNSMdh",
+  "xPub": "tpubDC1mjfvvzWrKrbnT7CYQaWWetk4eNcmteZXLV2wBXATE59ENwAckfDRu4Ygd1rvdNoh6KJ1W86FwCL3nqyX4CrbgfXq8azq79Y3rBjRaSFE",
+  "addr": "mpLzfjgkcgpLRHZehwZKJ1M9pVYWjExGEV",
+  "prvKeyWif": "cR1B7DFfPSKA9gL7hgxQCVwC7VtAdtbifSBWyeWZ2CiagBqB5jAk",
+  "pubKeyHex": "028fb7e34b1d9f41c1b7c4a9f93d75a18b4bf0ef9537a270a4018e43214448ac0d"
 }
 ```
 
