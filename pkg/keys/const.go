@@ -20,5 +20,10 @@ const (
 )
 
 const (
+	KeyFormatB58 = "base58"
+	KeyFormatHex = "hex"
+)
+
+const (
 	base58CharSet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 )

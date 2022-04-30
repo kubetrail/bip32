@@ -30,6 +30,11 @@ func init() {
 	}
 }
 
+var netParams = map[string]*chaincfg.Params{
+	NetworkTypeMainnet: &chaincfg.MainNetParams,
+	NetworkTypeTestnet: &chaincfg.TestNet3Params,
+}
+
 var (
 	keyVersions map[string][]byte
 )
@@ -72,9 +77,11 @@ func IsValidBase58String(input string) bool {
 type Key struct {
 	XPrv      string `json:"xPrv,omitempty" yaml:"xPrv,omitempty"`
 	XPub      string `json:"xPub,omitempty" yaml:"xPub,omitempty"`
-	Addr      string `json:"addr,omitempty" yaml:"addr,omitempty"`
 	PrvKeyWif string `json:"prvKeyWif,omitempty" yaml:"prvKeyWif,omitempty"`
 	PubKeyHex string `json:"pubKeyHex,omitempty" yaml:"pubKeyHex,omitempty"`
+	Addr      string `json:"addr,omitempty" yaml:"addr,omitempty"`
+	Network   string `json:"network,omitempty" yaml:"network,omitempty"`
+	CoinType  string `json:"coinType,omitempty" yaml:"coinType,omitempty"`
 }
 
 func (g *Key) String() string {
@@ -144,15 +151,95 @@ func Read(r io.Reader) (string, error) {
 	return key, nil
 }
 
-func DecodeToJson(keyString string) ([]byte, error) {
-	key, err := bip32.B58Deserialize(keyString)
+func DecodePublicHex(keyString string) ([]byte, error) {
+	pubKeyBytes, err := hex.DecodeString(keyString)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode key: %w", err)
+		return nil, fmt.Errorf("failed to decode pub key: %w", err)
+	}
+
+	pub, err := btcec.ParsePubKey(pubKeyBytes, btcec.S256())
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse pub key: %w", err)
+	}
+
+	addressPubKey, err := btcutil.NewAddressPubKey(pub.SerializeCompressed(), netParams[NetworkTypeMainnet])
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate new address from pub key: %w", err)
+	}
+
+	addr := addressPubKey.EncodeAddress()
+
+	key := &Key{
+		XPrv:      "",
+		XPub:      "",
+		PrvKeyWif: "",
+		PubKeyHex: keyString,
+		Addr:      addr,
+		Network:   NetworkTypeMainnet,
+		CoinType:  CoinTypeBtc,
 	}
 
 	jb, err := json.MarshalIndent(key, "", "  ")
 	if err != nil {
-		return nil, fmt.Errorf("failed to serialize key: %w", err)
+		return nil, fmt.Errorf("failed to serialize key output: %w", err)
+	}
+
+	return jb, nil
+}
+
+func DecodePrivateWifKey(keyString string) ([]byte, error) {
+	wif, err := btcutil.DecodeWIF(keyString)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode wif: %w", err)
+	}
+
+	var network string
+	for k, v := range netParams {
+		if wif.IsForNet(v) {
+			network = k
+			break
+		}
+	}
+
+	if len(network) == 0 {
+		return nil, fmt.Errorf("detected network is not supported, only btc mainnet and testnet keys are supported")
+	}
+
+	serializedPubKey := wif.SerializePubKey()
+	addressPubKey, err := btcutil.NewAddressPubKey(serializedPubKey, netParams[network])
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate new address from pub key: %w", err)
+	}
+
+	addr := addressPubKey.EncodeAddress()
+
+	key := &Key{
+		XPrv:      "",
+		XPub:      "",
+		PrvKeyWif: keyString,
+		PubKeyHex: hex.EncodeToString(serializedPubKey),
+		Addr:      addr,
+		Network:   network,
+		CoinType:  CoinTypeBtc,
+	}
+
+	jb, err := json.MarshalIndent(key, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("failed to serialize key output: %w", err)
+	}
+
+	return jb, nil
+}
+
+func DecodeExtendedKey(keyString string) ([]byte, error) {
+	key, err := Derive(keyString, "m")
+	if err != nil {
+		return nil, fmt.Errorf("failed to self derive extended key: %w", err)
+	}
+
+	jb, err := json.MarshalIndent(key, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("failed to serialize key output: %w", err)
 	}
 
 	return jb, nil
@@ -212,10 +299,28 @@ func extendedKeyToDerivedExtendedKey(key *bip32.Key, derivationPath string) (*bi
 }
 
 func extendedKeyToKey(key *bip32.Key) (*Key, error) {
-	params := &chaincfg.MainNetParams
-	if bytes.Equal(key.Version, keyVersions[path.Join(CoinTypeBtc, NetworkTypeTestnet, KeyTypePub)]) ||
-		bytes.Equal(key.Version, keyVersions[path.Join(CoinTypeBtc, NetworkTypeTestnet, KeyTypePrv)]) {
-		params = &chaincfg.TestNet3Params
+	var network string
+	var params *chaincfg.Params
+
+	if len(network) == 0 {
+		if bytes.Equal(key.Version, keyVersions[path.Join(CoinTypeBtc, NetworkTypeMainnet, KeyTypePub)]) ||
+			bytes.Equal(key.Version, keyVersions[path.Join(CoinTypeBtc, NetworkTypeMainnet, KeyTypePrv)]) {
+			params = &chaincfg.MainNetParams
+			network = NetworkTypeMainnet
+		}
+	}
+
+	if len(network) == 0 {
+		if bytes.Equal(key.Version, keyVersions[path.Join(CoinTypeBtc, NetworkTypeTestnet, KeyTypePub)]) ||
+			bytes.Equal(key.Version, keyVersions[path.Join(CoinTypeBtc, NetworkTypeTestnet, KeyTypePrv)]) {
+			params = &chaincfg.TestNet3Params
+			network = NetworkTypeTestnet
+		}
+	}
+
+	if len(network) == 0 {
+		return nil, fmt.Errorf("unsupported network and/or coin type, accepted values are BTC:%v",
+			[]string{NetworkTypeMainnet, NetworkTypeTestnet})
 	}
 
 	var pubKey *bip32.Key
@@ -269,9 +374,11 @@ func extendedKeyToKey(key *bip32.Key) (*Key, error) {
 	return &Key{
 		XPrv:      prvKeyString,
 		XPub:      pubKeyString,
-		Addr:      addr,
 		PrvKeyWif: prvKeyWif,
 		PubKeyHex: hex.EncodeToString(pubKey.Key),
+		Addr:      addr,
+		Network:   network,
+		CoinType:  CoinTypeBtc,
 	}, nil
 }
 
