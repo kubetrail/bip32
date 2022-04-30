@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"math/big"
+	"path"
 	"strconv"
 	"strings"
 
@@ -30,17 +31,24 @@ func init() {
 }
 
 var (
-	NetworkMainNetVersionPublic  []byte
-	NetworkMainNetVersionPrivate []byte
-	NetworkTestNetVersionPublic  []byte
-	NetworkTestNetVersionPrivate []byte
+	keyVersions map[string][]byte
 )
 
 func init() {
-	NetworkMainNetVersionPublic, _ = hex.DecodeString("0488B21E")
-	NetworkMainNetVersionPrivate, _ = hex.DecodeString("0488ADE4")
-	NetworkTestNetVersionPublic, _ = hex.DecodeString("043587CF")
-	NetworkTestNetVersionPrivate, _ = hex.DecodeString("04358394")
+	mustDecodeHex := func(input string) []byte {
+		b, err := hex.DecodeString(input)
+		if err != nil {
+			panic(err)
+		}
+		return b
+	}
+
+	keyVersions = map[string][]byte{
+		path.Join(CoinTypeBtc, NetworkTypeMainnet, KeyTypePub): mustDecodeHex("0488B21E"),
+		path.Join(CoinTypeBtc, NetworkTypeMainnet, KeyTypePrv): mustDecodeHex("0488ADE4"),
+		path.Join(CoinTypeBtc, NetworkTypeTestnet, KeyTypePub): mustDecodeHex("043587CF"),
+		path.Join(CoinTypeBtc, NetworkTypeTestnet, KeyTypePrv): mustDecodeHex("04358394"),
+	}
 }
 
 // IsValidBase58String checks if all chars in input string
@@ -91,24 +99,25 @@ func (g *Key) Print() string {
 // can be successive derivation indices such as m, 0, 0h etc.
 // or can be provided as m/0/0h.
 func New(seed []byte, network, derivationPath string) (*Key, error) {
-	// setup key versions based on network
+	network = strings.ToLower(network)
 	switch network {
-	case NetworkMainnet:
-		bip32.PrivateWalletVersion = NetworkMainNetVersionPrivate
-		bip32.PublicWalletVersion = NetworkMainNetVersionPublic
-	case NetworkTestnet:
-		bip32.PrivateWalletVersion = NetworkTestNetVersionPrivate
-		bip32.PublicWalletVersion = NetworkTestNetVersionPublic
+	case NetworkTypeMainnet, NetworkTypeTestnet:
 	default:
-		return nil, fmt.Errorf("invalid or unsupported network: %s", network)
+		return nil, fmt.Errorf("invalid or unsupported network: %s. allowed networks are %v", network,
+			[]string{NetworkTypeMainnet, NetworkTypeTestnet},
+		)
 	}
+
+	// setup key versions based on network
+	bip32.PrivateWalletVersion = keyVersions[path.Join(CoinTypeBtc, network, KeyTypePrv)]
+	bip32.PublicWalletVersion = keyVersions[path.Join(CoinTypeBtc, network, KeyTypePub)]
 
 	key, err := bip32.NewMasterKey(seed)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate root key: %w", err)
 	}
 
-	key, err = extendedKeyToDerivedExtendedKey(key.B58Serialize(), derivationPath)
+	key, err = extendedKeyToDerivedExtendedKey(key, derivationPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to derive extended key: %w", err)
 	}
@@ -150,7 +159,12 @@ func DecodeToJson(keyString string) ([]byte, error) {
 }
 
 func Derive(keyString string, derivationPath string) (*Key, error) {
-	key, err := extendedKeyToDerivedExtendedKey(keyString, derivationPath)
+	key, err := bip32.B58Deserialize(keyString)
+	if err != nil {
+		return nil, fmt.Errorf("failed to deserialize key: %w", err)
+	}
+
+	key, err = extendedKeyToDerivedExtendedKey(key, derivationPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to derive extended key: %w", err)
 	}
@@ -158,7 +172,7 @@ func Derive(keyString string, derivationPath string) (*Key, error) {
 	return extendedKeyToKey(key)
 }
 
-func extendedKeyToDerivedExtendedKey(keyString, derivationPath string) (*bip32.Key, error) {
+func extendedKeyToDerivedExtendedKey(key *bip32.Key, derivationPath string) (*bip32.Key, error) {
 	derivationPath = strings.Trim(strings.ToLower(derivationPath), "/")
 	if len(derivationPath) == 0 {
 		derivationPath = "m"
@@ -170,11 +184,6 @@ func extendedKeyToDerivedExtendedKey(keyString, derivationPath string) (*bip32.K
 	}
 	if parts[0] != "m" {
 		return nil, fmt.Errorf("invalid derivation path, must start with m: %s", derivationPath)
-	}
-
-	key, err := bip32.B58Deserialize(keyString)
-	if err != nil {
-		return nil, fmt.Errorf("failed to deserialize key: %w", err)
 	}
 
 	for i, part := range parts {
@@ -204,8 +213,8 @@ func extendedKeyToDerivedExtendedKey(keyString, derivationPath string) (*bip32.K
 
 func extendedKeyToKey(key *bip32.Key) (*Key, error) {
 	params := &chaincfg.MainNetParams
-	if bytes.Equal(key.Version, NetworkTestNetVersionPublic) ||
-		bytes.Equal(key.Version, NetworkTestNetVersionPrivate) {
+	if bytes.Equal(key.Version, keyVersions[path.Join(CoinTypeBtc, NetworkTypeTestnet, KeyTypePub)]) ||
+		bytes.Equal(key.Version, keyVersions[path.Join(CoinTypeBtc, NetworkTypeTestnet, KeyTypePrv)]) {
 		params = &chaincfg.TestNet3Params
 	}
 
@@ -272,21 +281,25 @@ func Validate(keyString string) error {
 		return fmt.Errorf("failed to decode key: %w", err)
 	}
 
-	if !bytes.Equal(key.Version, NetworkMainNetVersionPublic) &&
-		!bytes.Equal(key.Version, NetworkMainNetVersionPrivate) &&
-		!bytes.Equal(key.Version, NetworkTestNetVersionPublic) &&
-		!bytes.Equal(key.Version, NetworkTestNetVersionPrivate) {
-		return fmt.Errorf("unknown key version")
+	versionFound := false
+	for k, version := range keyVersions {
+		if bytes.Equal(key.Version, version) {
+			switch path.Base(k) {
+			case KeyTypePub:
+				if key.IsPrivate {
+					return fmt.Errorf("key is marked private, however, key version is public")
+				}
+			case KeyTypePrv:
+				if !key.IsPrivate {
+					return fmt.Errorf("key is marked public, however, key version is private")
+				}
+			}
+			versionFound = true
+			break
+		}
 	}
-
-	if (bytes.Equal(key.Version, NetworkMainNetVersionPrivate) ||
-		bytes.Equal(key.Version, NetworkTestNetVersionPrivate)) && !key.IsPrivate {
-		return fmt.Errorf("public key with private key version mismatch")
-	}
-
-	if (bytes.Equal(key.Version, NetworkMainNetVersionPublic) ||
-		bytes.Equal(key.Version, NetworkTestNetVersionPublic)) && key.IsPrivate {
-		return fmt.Errorf("private key with public key version mismatch")
+	if !versionFound {
+		return fmt.Errorf("unknown key version found")
 	}
 
 	if !key.IsPrivate && key.Key[0] == 4 {

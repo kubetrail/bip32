@@ -6,8 +6,17 @@ const (
 )
 
 const (
-	NetworkMainnet = "mainnet"
-	NetworkTestnet = "testnet"
+	NetworkTypeMainnet = "mainnet"
+	NetworkTypeTestnet = "testnet"
+)
+
+const (
+	CoinTypeBtc = "btc"
+)
+
+const (
+	KeyTypePub = "pub"
+	KeyTypePrv = "prv"
 )
 
 const (
