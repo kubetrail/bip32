@@ -2,7 +2,10 @@ package run
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+
+	"gopkg.in/yaml.v3"
 
 	"github.com/kubetrail/bip32/pkg/flags"
 	"github.com/kubetrail/bip32/pkg/keys"
@@ -15,6 +18,8 @@ import (
 )
 
 func Gen(cmd *cobra.Command, args []string) error {
+	persistentFlags := getPersistentFlags(cmd)
+
 	_ = viper.BindPFlag(flags.UsePassphrase, cmd.Flag(flags.UsePassphrase))
 	_ = viper.BindPFlag(flags.SkipMnemonicValidation, cmd.Flag(flags.SkipMnemonicValidation))
 	_ = viper.BindPFlag(flags.DerivationPath, cmd.Flag(flags.DerivationPath))
@@ -103,16 +108,23 @@ func Gen(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to generate key: %w", err)
 	}
 
-	if prompt {
-		if _, err := fmt.Fprint(cmd.OutOrStdout(), key.Print()); err != nil {
-			return fmt.Errorf("failed to write key to output: %w", err)
+	switch persistentFlags.OutputFormat {
+	case flags.OutputFormatNative, flags.OutputFormatYaml:
+		jb, err := yaml.Marshal(key)
+		if err != nil {
+			return fmt.Errorf("failed to serialize output to json: %w", err)
 		}
-
-		return nil
-	}
-
-	if _, err := fmt.Fprintln(cmd.OutOrStdout(), key); err != nil {
-		return fmt.Errorf("failed to write key to output: %w", err)
+		if _, err := fmt.Fprint(cmd.OutOrStdout(), string(jb)); err != nil {
+			return fmt.Errorf("failed to write to output: %w", err)
+		}
+	case flags.OutputFormatJson:
+		jb, err := json.Marshal(key)
+		if err != nil {
+			return fmt.Errorf("failed to serialize output to json: %w", err)
+		}
+		if _, err := fmt.Fprintln(cmd.OutOrStdout(), string(jb)); err != nil {
+			return fmt.Errorf("failed to write to output: %w", err)
+		}
 	}
 
 	return nil

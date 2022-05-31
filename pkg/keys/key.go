@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io"
 	"math/big"
@@ -17,7 +16,6 @@ import (
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcutil"
 	"github.com/tyler-smith/go-bip32"
-	"gopkg.in/yaml.v3"
 )
 
 // base58CharMap is the lookup hashmap for base58 char set
@@ -75,32 +73,15 @@ func IsValidBase58String(input string) bool {
 // Key represents BIP32 key components that are presented
 // to the user
 type Key struct {
-	Seed      string `json:"seed,omitempty" yaml:"seed,omitempty"`
-	XPrv      string `json:"xPrv,omitempty" yaml:"xPrv,omitempty"`
-	XPub      string `json:"xPub,omitempty" yaml:"xPub,omitempty"`
-	PrvKeyWif string `json:"prvKeyWif,omitempty" yaml:"prvKeyWif,omitempty"`
-	PubKeyHex string `json:"pubKeyHex,omitempty" yaml:"pubKeyHex,omitempty"`
-	Addr      string `json:"addr,omitempty" yaml:"addr,omitempty"`
-	Network   string `json:"network,omitempty" yaml:"network,omitempty"`
-	CoinType  string `json:"coinType,omitempty" yaml:"coinType,omitempty"`
-}
-
-func (g *Key) String() string {
-	jb, err := json.Marshal(g)
-	if err != nil {
-		return err.Error()
-	}
-
-	return string(jb)
-}
-
-func (g *Key) Print() string {
-	b, err := yaml.Marshal(g)
-	if err != nil {
-		return err.Error()
-	}
-
-	return string(b)
+	Seed           string `json:"seed,omitempty" yaml:"seed,omitempty"`
+	XPrv           string `json:"xPrv,omitempty" yaml:"xPrv,omitempty"`
+	XPub           string `json:"xPub,omitempty" yaml:"xPub,omitempty"`
+	PrvKeyWif      string `json:"prvKeyWif,omitempty" yaml:"prvKeyWif,omitempty"`
+	PubKeyHex      string `json:"pubKeyHex,omitempty" yaml:"pubKeyHex,omitempty"`
+	Addr           string `json:"addr,omitempty" yaml:"addr,omitempty"`
+	Network        string `json:"network,omitempty" yaml:"network,omitempty"`
+	DerivationPath string `json:"derivationPath,omitempty" yaml:"derivationPath,omitempty"`
+	CoinType       string `json:"coinType,omitempty" yaml:"coinType,omitempty"`
 }
 
 // New generates a new key pair with a seed. The derivation paths
@@ -136,6 +117,7 @@ func New(seed []byte, network, derivationPath string) (*Key, error) {
 	}
 
 	key.Seed = hex.EncodeToString(seed)
+	key.DerivationPath = derivationPath
 
 	return key, nil
 }
@@ -159,7 +141,7 @@ func Read(r io.Reader) (string, error) {
 	return key, nil
 }
 
-func DecodePublicHex(keyString string) ([]byte, error) {
+func DecodePublicHex(keyString string) (*Key, error) {
 	pubKeyBytes, err := hex.DecodeString(keyString)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode pub key: %w", err)
@@ -187,15 +169,10 @@ func DecodePublicHex(keyString string) ([]byte, error) {
 		CoinType:  CoinTypeBtc,
 	}
 
-	jb, err := json.Marshal(key)
-	if err != nil {
-		return nil, fmt.Errorf("failed to serialize key output: %w", err)
-	}
-
-	return jb, nil
+	return key, nil
 }
 
-func DecodePrivateWifKey(keyString string) ([]byte, error) {
+func DecodePrivateWifKey(keyString string) (*Key, error) {
 	wif, err := btcutil.DecodeWIF(keyString)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode wif: %w", err)
@@ -231,26 +208,16 @@ func DecodePrivateWifKey(keyString string) ([]byte, error) {
 		CoinType:  CoinTypeBtc,
 	}
 
-	jb, err := json.Marshal(key)
-	if err != nil {
-		return nil, fmt.Errorf("failed to serialize key output: %w", err)
-	}
-
-	return jb, nil
+	return key, nil
 }
 
-func DecodeExtendedKey(keyString string) ([]byte, error) {
+func DecodeExtendedKey(keyString string) (*Key, error) {
 	key, err := Derive(keyString, "m")
 	if err != nil {
 		return nil, fmt.Errorf("failed to self derive extended key: %w", err)
 	}
 
-	jb, err := json.Marshal(key)
-	if err != nil {
-		return nil, fmt.Errorf("failed to serialize key output: %w", err)
-	}
-
-	return jb, nil
+	return key, nil
 }
 
 func Derive(keyString string, derivationPath string) (*Key, error) {

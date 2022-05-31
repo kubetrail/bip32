@@ -1,6 +1,7 @@
 package run
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/kubetrail/bip32/pkg/flags"
@@ -8,9 +9,12 @@ import (
 	"github.com/kubetrail/bip39/pkg/prompts"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 )
 
 func Derive(cmd *cobra.Command, args []string) error {
+	persistentFlags := getPersistentFlags(cmd)
+
 	_ = viper.BindPFlag(flags.DerivationPath, cmd.Flag(flags.DerivationPath))
 	derivationPath := viper.GetString(flags.DerivationPath)
 
@@ -41,16 +45,23 @@ func Derive(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to derive key: %w", err)
 	}
 
-	if prompt {
-		if _, err := fmt.Fprint(cmd.OutOrStdout(), key.Print()); err != nil {
-			return fmt.Errorf("failed to write key to output: %w", err)
+	switch persistentFlags.OutputFormat {
+	case flags.OutputFormatNative, flags.OutputFormatYaml:
+		jb, err := yaml.Marshal(key)
+		if err != nil {
+			return fmt.Errorf("failed to serialize output to json: %w", err)
 		}
-
-		return nil
-	}
-
-	if _, err := fmt.Fprintln(cmd.OutOrStdout(), key); err != nil {
-		return fmt.Errorf("failed to write key to output: %w", err)
+		if _, err := fmt.Fprint(cmd.OutOrStdout(), string(jb)); err != nil {
+			return fmt.Errorf("failed to write to output: %w", err)
+		}
+	case flags.OutputFormatJson:
+		jb, err := json.Marshal(key)
+		if err != nil {
+			return fmt.Errorf("failed to serialize output to json: %w", err)
+		}
+		if _, err := fmt.Fprintln(cmd.OutOrStdout(), string(jb)); err != nil {
+			return fmt.Errorf("failed to write to output: %w", err)
+		}
 	}
 
 	return nil

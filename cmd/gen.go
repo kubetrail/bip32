@@ -74,11 +74,77 @@ func init() {
 	rootCmd.AddCommand(genCmd)
 	f := genCmd.Flags()
 
-	f.String(flags.DerivationPath, "m", "Chain Derivation path")
+	f.String(flags.DerivationPath, flags.DerivationPath0, "Chain Derivation path")
 	f.Bool(flags.UsePassphrase, false, "Prompt for secret passphrase")
 	f.Bool(flags.InputHexSeed, false, "Treat input as hex seed instead of mnemonic")
 	f.String(flags.MnemonicLanguage, mnemonics.LanguageEnglish, "Mnemonic language")
 	f.Bool(flags.SkipMnemonicValidation, false, "Skip mnemonic validation")
 	// https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#serialization-format
-	f.String(flags.Network, "mainnet", "Network: mainnet or testnet")
+	f.String(flags.Network, flags.NetworkMainnet, "Network: mainnet or testnet")
+
+	_ = genCmd.RegisterFlagCompletionFunc(
+		flags.Network,
+		func(
+			cmd *cobra.Command,
+			args []string,
+			toComplete string,
+		) (
+			[]string,
+			cobra.ShellCompDirective,
+		) {
+			return []string{
+					flags.NetworkMainnet,
+					flags.NetworkMainnet,
+				},
+				cobra.ShellCompDirectiveDefault
+		},
+	)
+
+	_ = genCmd.RegisterFlagCompletionFunc(
+		flags.MnemonicLanguage,
+		func(
+			cmd *cobra.Command,
+			args []string,
+			toComplete string,
+		) (
+			[]string,
+			cobra.ShellCompDirective,
+		) {
+			return []string{
+					mnemonics.LanguageEnglish,
+					mnemonics.LanguageJapanese,
+					mnemonics.LanguageChineseSimplified,
+					mnemonics.LanguageChineseTraditional,
+					mnemonics.LanguageCzech,
+					mnemonics.LanguageFrench,
+					mnemonics.LanguageItalian,
+					mnemonics.LanguageKorean,
+					mnemonics.LanguageSpanish,
+				},
+				cobra.ShellCompDirectiveDefault
+		},
+	)
+
+	_ = genCmd.RegisterFlagCompletionFunc(
+		flags.DerivationPath,
+		func(
+			cmd *cobra.Command,
+			args []string,
+			toComplete string,
+		) (
+			[]string,
+			cobra.ShellCompDirective,
+		) {
+			return []string{
+					"example-derivation-paths",
+					flags.DerivationPath0,
+					flags.DerivationPath1,
+					flags.DerivationPath2,
+					flags.DerivationPath3,
+					flags.DerivationPath4,
+					flags.DerivationPath5,
+				},
+				cobra.ShellCompDirectiveDefault
+		},
+	)
 }

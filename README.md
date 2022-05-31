@@ -65,14 +65,15 @@ Let's generate some keys:
 bip32 gen
 ```
 ```text
-Enter mnemonic: client sustain stumble prosper pepper maze prison view omit gold organ youth vintage tattoo practice mutual budget excite bubble economy quick conduct spot end
+Enter mnemonic:  client sustain stumble prosper pepper maze prison view omit gold organ youth vintage tattoo practice mutual budget excite bubble economy quick conduct spot end
 seed: b66ad217f4bd1a7a9889cc86318ef218b72d4ef34d759facae297a65210325ce5de3b106f566be9be4f43a84298fc64cbd8b4419649ed59b3e4a0d5b8e706e7b
-xPrv: xprv9s21ZrQH143K41PSWfXjMxph7HzErpb6yyNhtPWEpovRDuWgH8vqWGAndNz1oodj88J8JnaNyQMoL2yNKbYWCubfVTF9ux7aiNJCrF8thw7
-xPub: xpub661MyMwAqRbcGVTuch4jj6mRfKpjGHJxMCJJgmurP9TQ6hqppgF644VGUevkyCztRpY4PjssirGR5LPpBSyr8BE8GGWev9qGihrfzGB7TpM
-prvKeyWif: L4XzfA8957Wu6foyk1ZYcPJYxv444q6F7gZKKy9BHXMLTVzb1w2N
-pubKeyHex: 03528f86fa0f2f0f90011a278a7f96800f9c2016c5ee257b3234af66420320a55e
-addr: 19JduQ1dmpeb3V9d1rKfyb8Wkg814GXL83
+xPrv: xprvA3MV9gbvFKuzyqBEfME4SGgybXA451htHMVR8eVwotHPAnpHYenLWirLRBrcK5NDX4Riq89v8weeNY7QNhfY5ZcDkCHqkJHzc5attHZie2Q
+xPub: xpub6GLqZC8p5hUJCKFhmNm4oQdi9YzYUURjeaR1w2uZNDpN3b9S6C6b4XApGTLjRxKwbQ8JJP4Hw1GhjLTCpyT1cwnYSozUVmyexLrUfHjBssR
+prvKeyWif: L1SbuQzhGFkGDuWQMfyUi71PXtH6BbgVFZjASh3hXiTAH3hrywLP
+pubKeyHex: 02b9d3c47c4523de30e0c228586277687b5ed5a49626b5f660c747e82bf936b203
+addr: 12u3DEDrEyY7vyRmfVpCjSvNZJeXXKC7Bf
 network: mainnet
+derivationPath: m/44h/0h/0h/0/0
 coinType: btc
 ```
 
@@ -114,33 +115,35 @@ bip32 gen --use-passphrase
 ```
 ```text
 Enter mnemonic: high human season brick chimney spoil open butter better spice refuse obey
-Enter secret passphrase:
-Enter secret passphrase again:
-seed: 4d23f57c177dd24254d03fa7582cb108bea8201df311b6193922ce2099dd9a551fefbab99b273c23590ebab934ae85084457817b9a75954e9c0f922a1778b1fd
-xPrv: xprv9s21ZrQH143K4QTDT4BBvTBefiFGi3sxNZYNpY4eXSfMo5AVDYVAq1jrJeHeDeqUHzMFafzsSdfGcL8mDxGF1bDDUtWpqbh1G8b4RzJYafJ
-xPub: xpub661MyMwAqRbcGtXgZ5iCHb8PDk5m7WbojnTycvUG5nCLfsVdm5oRNp4L9uGbpPXeVJ2bpxTaayvaASGds1YNg6Y1zaPvKsSc4X6SEjfPKGs
-prvKeyWif: KwyTBygSkeNGvCipEStfLxAtvk7w4vZXBhbBj7TjBjQfGyE5b1mo
-pubKeyHex: 0210208edb2b764b3fb2f6d815280aa2e13b9bcc95b9b91cd7edd19be947de7785
-addr: 1AXNUgE7avg43bKQejXfdtu5P3vkAGUonA
+Enter secret passphrase: 
+Enter secret passphrase again: 
+seed: 7ad1ceebbbcef39a1ceee573e6446c32e0bf047ee90daf8f84d0249ea160530fb9a5cfe17fe83cf835707e4e92cb327e53c971362e1b9020b90a3c14f2bf18db
+xPrv: xprvA3f5HGHwNfEtudV4P7Djj1rfdM3MTGxyDVzBE8QVv9T1i539j71MyfKUmnw2dSgFFeExPRDYWgvnUnqZJTuCoAAqAf9HnxZAR62rh2bxFSA
+xPub: xpub6GeRgmpqD2oC87ZXV8kk69oQBNsqrjgpaiun2Wp7UUyzasNJGeKcXTdxd3wnax6h64jUPovvTZUYcSvVDYRcwMSPXv3jQZiWMM5TmLTfKZ7
+prvKeyWif: L3Hk4ckie6rktaBfZEj3eY2czmD67rZd7RjyBTFtnhXrBxha22ZP
+pubKeyHex: 02b2cf26a0b6ab3ad6cee283f954b6952ac44da6c04232e0b381e80fa4cbf9a985
+addr: 1KtGCn7vzXCbj7kHKU61CxmctDvbwBJZNt
 network: mainnet
+derivationPath: m/44h/0h/0h/0/0
 coinType: btc
 ```
 
 Alternatively, pass mnemonic via STDIN pipe when a passphrase is not being used:
 ```bash
 echo client sustain stumble prosper pepper maze prison view omit gold organ youth vintage tattoo practice mutual budget excite bubble economy quick conduct spot end \
-  | bip32 gen \
+  | bip32 gen --output-format=json \
   | jq '.'
 ```
 ```json
 {
   "seed": "b66ad217f4bd1a7a9889cc86318ef218b72d4ef34d759facae297a65210325ce5de3b106f566be9be4f43a84298fc64cbd8b4419649ed59b3e4a0d5b8e706e7b",
-  "xPrv": "xprv9s21ZrQH143K41PSWfXjMxph7HzErpb6yyNhtPWEpovRDuWgH8vqWGAndNz1oodj88J8JnaNyQMoL2yNKbYWCubfVTF9ux7aiNJCrF8thw7",
-  "xPub": "xpub661MyMwAqRbcGVTuch4jj6mRfKpjGHJxMCJJgmurP9TQ6hqppgF644VGUevkyCztRpY4PjssirGR5LPpBSyr8BE8GGWev9qGihrfzGB7TpM",
-  "prvKeyWif": "L4XzfA8957Wu6foyk1ZYcPJYxv444q6F7gZKKy9BHXMLTVzb1w2N",
-  "pubKeyHex": "03528f86fa0f2f0f90011a278a7f96800f9c2016c5ee257b3234af66420320a55e",
-  "addr": "19JduQ1dmpeb3V9d1rKfyb8Wkg814GXL83",
+  "xPrv": "xprvA3MV9gbvFKuzyqBEfME4SGgybXA451htHMVR8eVwotHPAnpHYenLWirLRBrcK5NDX4Riq89v8weeNY7QNhfY5ZcDkCHqkJHzc5attHZie2Q",
+  "xPub": "xpub6GLqZC8p5hUJCKFhmNm4oQdi9YzYUURjeaR1w2uZNDpN3b9S6C6b4XApGTLjRxKwbQ8JJP4Hw1GhjLTCpyT1cwnYSozUVmyexLrUfHjBssR",
+  "prvKeyWif": "L1SbuQzhGFkGDuWQMfyUi71PXtH6BbgVFZjASh3hXiTAH3hrywLP",
+  "pubKeyHex": "02b9d3c47c4523de30e0c228586277687b5ed5a49626b5f660c747e82bf936b203",
+  "addr": "12u3DEDrEyY7vyRmfVpCjSvNZJeXXKC7Bf",
   "network": "mainnet",
+  "derivationPath": "m/44h/0h/0h/0/0",
   "coinType": "btc"
 }
 ```
@@ -151,12 +154,13 @@ bip32 gen --skip-mnemonic-validation this is an invalid mnemonic
 ```
 ```text
 seed: bb06e6570ed0b71ac71e4feefeb3a7e2e4cf04ba80a065408150800f86583add8d7ba2ed117444a00f95ca8966ea2e7ff5c8a84b0f5b35a43388d76f0eca043f
-xPrv: xprv9s21ZrQH143K3w42Wvz4brLtC16GRNq2CbVSBWvj37HAiYPjHTv1dFD3oecPnmevt1oRsvNJc8pKspRVvq2yoehVwbzkek1nHVwDraPCjvc
-xPub: xpub661MyMwAqRbcGR8VcxX4xzHck2vkpqYsZpR2yuLLbSp9bLisq1EGB3XXeuz4xhRG5P92Witd9Qefo6qLaPmAXv8JPfcYwYdQMWU9g1DCAk1
-prvKeyWif: L3USrmAFQ1Bc7VoPH4hLAiDoBGJpMTVsWpa78yaiDq7EdG74jTPN
-pubKeyHex: 02e7cfa509815cfd952b4df4ca677dc1f18551fef158b850703aafd4093c066c67
-addr: 1CcNBXdpmBMRYaNz8Czgn14o584zjaZXeK
+xPrv: xprvA3UmZrJ2YeNBdbx2oeNgxNTjhbRrpqAQZr1aeTmToDJLKU2eKCvo4jxScANisRUGWZnFz6Q2aw3fLFwfKSUkNcMvk3sYSqNuaouccauM6zb
+xPub: xpub6GU7yMpvP1vUr62VufuhKWQUFdGMEHtFw4wBSrB5MYqKCGMnrkF3cYGvTQG9mi7hNDGo7pfGhksNRCTuBwhsHTRmJdnLKP4ARLtmCAH2J6e
+prvKeyWif: L46QdcLXwjJAJrDcot65v1JkruUMfS4aY2jXwz52KR38Ki6zG1FB
+pubKeyHex: 02367a9d8a72dc738402cdbc6e0ba426f90b76b895322c3ff4a0c412d9bf1962f2
+addr: 1G7VNts7A9GGCus9whX8McPexcfxTCjuUq
 network: mainnet
+derivationPath: m/44h/0h/0h/0/0
 coinType: btc
 ```
 
@@ -167,12 +171,13 @@ bip32 gen "machine notice lobster hundred mutual creek earth upgrade sea price c
 ```
 ```text
 seed: 6b4eb91a3562f7d557e9ba09daa42141d37a9cb55ce1efab3bb728e13a93bb9be963406b6845459644c9f008b3a28a482ed8aafbdf982a600dd2c35b0648031d
-xPrv: xprv9s21ZrQH143K2krDy28uPZgHhFvcxpsrVzfkTBE8Ai5qqXPakRH1CTnqMWADFkzccesFYGoAnJgztWiojmELqxmqzwnHxsyV5PNckwnhqFR
-xPub: xpub661MyMwAqRbcFEvh53fukhd2FHm7NHbhsDbMFZdjj3cpiKijHxbFkG7KCp7y89qHM2Zk5hfcEQBL8ETt25irqEcFSx3V3wZKh4qb9ckLFSp
-prvKeyWif: KzvGFD6ofxw6rcYeeCZqut2y4Gq6oiA5YbQLJDPqydrc1Jn2XNM9
-pubKeyHex: 03f05b80b3f8903d97cea3ebf7b7496ea368703a35ac512655a74a1432560577b3
-addr: 12EDNPj2VeBoArRYqB1Fb9LpE8ufeXfAr3
+xPrv: xprvA3WunfZRAhVjKA3fFFJnPYbjvTraEuEuFyXejamSsbH1QQWxV7z6BKLicGGYhEuHpDTsnFH2NmC53zCLb49qxBZ6wUwFon36JwV9n2PcKjp
+xPub: xpub6GWGCB6K1542Xe88MGqnkgYUUVh4eMxkdCTFXyB4RvozHCr72fJLj7fCTYsdk3GxGTjVFeW9SZFAtykc2TV31gT6fwACFrTgzdgg3rJtTrV
+prvKeyWif: KwoacAwjNMGs8HdfjRh25D9edqFYuzMZhA9z6vaDGhvHCr9q4YoM
+pubKeyHex: 02e0c75a3986eda7c7da1abf844b9042ab5e987cdd9af76325073c638a563544e1
+addr: 1CnSnUkwcXSD26nRmHepDaWLJFrCVJgtsK
 network: mainnet
+derivationPath: m/44h/0h/0h/0/0
 coinType: btc
 ```
 ```bash
@@ -180,12 +185,13 @@ bip32 gen "   machine    notice    lobster    hundred    mutual creek earth upgr
 ```
 ```text
 seed: 6b4eb91a3562f7d557e9ba09daa42141d37a9cb55ce1efab3bb728e13a93bb9be963406b6845459644c9f008b3a28a482ed8aafbdf982a600dd2c35b0648031d
-xPrv: xprv9s21ZrQH143K2krDy28uPZgHhFvcxpsrVzfkTBE8Ai5qqXPakRH1CTnqMWADFkzccesFYGoAnJgztWiojmELqxmqzwnHxsyV5PNckwnhqFR
-xPub: xpub661MyMwAqRbcFEvh53fukhd2FHm7NHbhsDbMFZdjj3cpiKijHxbFkG7KCp7y89qHM2Zk5hfcEQBL8ETt25irqEcFSx3V3wZKh4qb9ckLFSp
-prvKeyWif: KzvGFD6ofxw6rcYeeCZqut2y4Gq6oiA5YbQLJDPqydrc1Jn2XNM9
-pubKeyHex: 03f05b80b3f8903d97cea3ebf7b7496ea368703a35ac512655a74a1432560577b3
-addr: 12EDNPj2VeBoArRYqB1Fb9LpE8ufeXfAr3
+xPrv: xprvA3WunfZRAhVjKA3fFFJnPYbjvTraEuEuFyXejamSsbH1QQWxV7z6BKLicGGYhEuHpDTsnFH2NmC53zCLb49qxBZ6wUwFon36JwV9n2PcKjp
+xPub: xpub6GWGCB6K1542Xe88MGqnkgYUUVh4eMxkdCTFXyB4RvozHCr72fJLj7fCTYsdk3GxGTjVFeW9SZFAtykc2TV31gT6fwACFrTgzdgg3rJtTrV
+prvKeyWif: KwoacAwjNMGs8HdfjRh25D9edqFYuzMZhA9z6vaDGhvHCr9q4YoM
+pubKeyHex: 02e0c75a3986eda7c7da1abf844b9042ab5e987cdd9af76325073c638a563544e1
+addr: 1CnSnUkwcXSD26nRmHepDaWLJFrCVJgtsK
 network: mainnet
+derivationPath: m/44h/0h/0h/0/0
 coinType: btc
 ```
 
@@ -205,12 +211,13 @@ bip32 gen --mnemonic-language=Japanese たいちょう ちょさくけん ぞ
 ```
 ```text
 seed: 6b4eb91a3562f7d557e9ba09daa42141d37a9cb55ce1efab3bb728e13a93bb9be963406b6845459644c9f008b3a28a482ed8aafbdf982a600dd2c35b0648031d
-xPrv: xprv9s21ZrQH143K2krDy28uPZgHhFvcxpsrVzfkTBE8Ai5qqXPakRH1CTnqMWADFkzccesFYGoAnJgztWiojmELqxmqzwnHxsyV5PNckwnhqFR
-xPub: xpub661MyMwAqRbcFEvh53fukhd2FHm7NHbhsDbMFZdjj3cpiKijHxbFkG7KCp7y89qHM2Zk5hfcEQBL8ETt25irqEcFSx3V3wZKh4qb9ckLFSp
-prvKeyWif: KzvGFD6ofxw6rcYeeCZqut2y4Gq6oiA5YbQLJDPqydrc1Jn2XNM9
-pubKeyHex: 03f05b80b3f8903d97cea3ebf7b7496ea368703a35ac512655a74a1432560577b3
-addr: 12EDNPj2VeBoArRYqB1Fb9LpE8ufeXfAr3
+xPrv: xprvA3WunfZRAhVjKA3fFFJnPYbjvTraEuEuFyXejamSsbH1QQWxV7z6BKLicGGYhEuHpDTsnFH2NmC53zCLb49qxBZ6wUwFon36JwV9n2PcKjp
+xPub: xpub6GWGCB6K1542Xe88MGqnkgYUUVh4eMxkdCTFXyB4RvozHCr72fJLj7fCTYsdk3GxGTjVFeW9SZFAtykc2TV31gT6fwACFrTgzdgg3rJtTrV
+prvKeyWif: KwoacAwjNMGs8HdfjRh25D9edqFYuzMZhA9z6vaDGhvHCr9q4YoM
+pubKeyHex: 02e0c75a3986eda7c7da1abf844b9042ab5e987cdd9af76325073c638a563544e1
+addr: 1CnSnUkwcXSD26nRmHepDaWLJFrCVJgtsK
 network: mainnet
+derivationPath: m/44h/0h/0h/0/0
 coinType: btc
 ```
 
@@ -221,12 +228,13 @@ bip32 gen --input-hex-seed
 ```text
 Enter seed in hex: 6b4eb91a3562f7d557e9ba09daa42141d37a9cb55ce1efab3bb728e13a93bb9be963406b6845459644c9f008b3a28a482ed8aafbdf982a600dd2c35b0648031d
 seed: 6b4eb91a3562f7d557e9ba09daa42141d37a9cb55ce1efab3bb728e13a93bb9be963406b6845459644c9f008b3a28a482ed8aafbdf982a600dd2c35b0648031d
-xPrv: xprv9s21ZrQH143K2krDy28uPZgHhFvcxpsrVzfkTBE8Ai5qqXPakRH1CTnqMWADFkzccesFYGoAnJgztWiojmELqxmqzwnHxsyV5PNckwnhqFR
-xPub: xpub661MyMwAqRbcFEvh53fukhd2FHm7NHbhsDbMFZdjj3cpiKijHxbFkG7KCp7y89qHM2Zk5hfcEQBL8ETt25irqEcFSx3V3wZKh4qb9ckLFSp
-prvKeyWif: KzvGFD6ofxw6rcYeeCZqut2y4Gq6oiA5YbQLJDPqydrc1Jn2XNM9
-pubKeyHex: 03f05b80b3f8903d97cea3ebf7b7496ea368703a35ac512655a74a1432560577b3
-addr: 12EDNPj2VeBoArRYqB1Fb9LpE8ufeXfAr3
+xPrv: xprvA3WunfZRAhVjKA3fFFJnPYbjvTraEuEuFyXejamSsbH1QQWxV7z6BKLicGGYhEuHpDTsnFH2NmC53zCLb49qxBZ6wUwFon36JwV9n2PcKjp
+xPub: xpub6GWGCB6K1542Xe88MGqnkgYUUVh4eMxkdCTFXyB4RvozHCr72fJLj7fCTYsdk3GxGTjVFeW9SZFAtykc2TV31gT6fwACFrTgzdgg3rJtTrV
+prvKeyWif: KwoacAwjNMGs8HdfjRh25D9edqFYuzMZhA9z6vaDGhvHCr9q4YoM
+pubKeyHex: 02e0c75a3986eda7c7da1abf844b9042ab5e987cdd9af76325073c638a563544e1
+addr: 1CnSnUkwcXSD26nRmHepDaWLJFrCVJgtsK
 network: mainnet
+derivationPath: m/44h/0h/0h/0/0
 coinType: btc
 ```
 
@@ -236,7 +244,7 @@ A chain derivation path can be provided such as `m`, `m/0`, `m/0H`, `m/0/234` et
 Generate root keys
 ```bash
 echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
-  | bip32 gen --input-hex-seed --derivation-path=m \
+  | bip32 gen --input-hex-seed --derivation-path=m  --output-format=json \
   | jq '.'
 ```
 ```json
@@ -248,6 +256,7 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
   "pubKeyHex": "026f6fedc9240f61daa9c7144b682a430a3a1366576f840bf2d070101fcbc9a02d",
   "addr": "1GpWFBBE37FQumRkrVUL6HB1bqSWCuYsKt",
   "network": "mainnet",
+  "derivationPath": "m",
   "coinType": "btc"
 }
 ```
@@ -255,7 +264,7 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
 Generate first hardened child of root key
 ```bash
 echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
-  | bip32 gen --input-hex-seed --derivation-path=m/0h \
+  | bip32 gen --input-hex-seed --derivation-path=m/0h --output-format=json \
   | jq '.'
 ```
 ```json
@@ -267,6 +276,7 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
   "pubKeyHex": "039382d2b6003446792d2917f7ac4b3edf079a1a94dd4eb010dc25109dda680a9d",
   "addr": "1KvwpccVR6CsN3ve2LZpxkSZ5od5262b75",
   "network": "mainnet",
+  "derivationPath": "m/0h",
   "coinType": "btc"
 }
 ```
@@ -274,7 +284,7 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
 Generate fourth child of third hardened child of root key
 ```bash
 echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
-  | bip32 gen --input-hex-seed --derivation-path=m/2h/3 \
+  | bip32 gen --input-hex-seed --derivation-path=m/2h/3 --output-format=json \
   | jq '.'
 ```
 ```json
@@ -286,6 +296,7 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
   "pubKeyHex": "028fb7e34b1d9f41c1b7c4a9f93d75a18b4bf0ef9537a270a4018e43214448ac0d",
   "addr": "19q3NgbmofP5eB62zNawU68pxVwopdHDZ2",
   "network": "mainnet",
+  "derivationPath": "m/2h/3",
   "coinType": "btc"
 }
 ```
@@ -296,7 +307,7 @@ Bitcoin networks `mainnet` (default) and `testnet` can be selected using `--netw
 Example below shows generation for `mainnet` using a hex seed
 ```bash
 echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
-  | bip32 gen --input-hex-seed --derivation-path=m/2h/3 --network=mainnet \
+  | bip32 gen --input-hex-seed --derivation-path=m/2h/3 --network=mainnet --output-format=json \
   | jq '.'
 ```
 ```json
@@ -308,6 +319,7 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
   "pubKeyHex": "028fb7e34b1d9f41c1b7c4a9f93d75a18b4bf0ef9537a270a4018e43214448ac0d",
   "addr": "19q3NgbmofP5eB62zNawU68pxVwopdHDZ2",
   "network": "mainnet",
+  "derivationPath": "m/2h/3",
   "coinType": "btc"
 }
 ```
@@ -315,7 +327,7 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
 Same hex seed used for generation on `testnet` results in different keys.
 ```bash
 echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
-  | bip32 gen --input-hex-seed --derivation-path=m/2h/3 --network=testnet \
+  | bip32 gen --input-hex-seed --derivation-path=m/2h/3 --network=testnet --output-format=json \
   | jq '.'
 ```
 ```json
@@ -327,6 +339,7 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
   "pubKeyHex": "028fb7e34b1d9f41c1b7c4a9f93d75a18b4bf0ef9537a270a4018e43214448ac0d",
   "addr": "mpLzfjgkcgpLRHZehwZKJ1M9pVYWjExGEV",
   "network": "testnet",
+  "derivationPath": "m/2h/3",
   "coinType": "btc"
 }
 ```
@@ -386,7 +399,7 @@ While `derive` command is used for deriving child keys, `decode` works with a va
 * 
 ```bash
 echo xprv9xenovaMSsLaNKX8Yz2K1TEZ1b8VymYyji1SL6URcvAMT4EXKQTQxySayFFk2CA6BrhVaBkXWuzTSfNHMEuu1a6gCxZhdc5t9afpx7YRdq4 \
-  | bip32 decode \
+  | bip32 decode --output-format=json \
   | jq '.'
 ```
 ```json
@@ -404,7 +417,7 @@ echo xprv9xenovaMSsLaNKX8Yz2K1TEZ1b8VymYyji1SL6URcvAMT4EXKQTQxySayFFk2CA6BrhVaBk
 Similarly, a public key can be decoded as follows:
 ```bash
 echo xpub661MyMwAqRbcGczjuMoRm6dXaLDEhW1u34gKenbeYqAix21mdUKJyuyu5F1rzYGVxyL6tmgBUAEPrEz92mBXjByMRiJdba9wpnN37RLLAXa \
-  | bip32 decode \
+  | bip32 decode --output-format=json \
   | jq '.'
 ```
 ```json
@@ -419,7 +432,7 @@ echo xpub661MyMwAqRbcGczjuMoRm6dXaLDEhW1u34gKenbeYqAix21mdUKJyuyu5F1rzYGVxyL6tmg
 
 Decode private WIF key:
 ```bash
-bip32 decode KzeBeJFoxNctzErrKH9GqBS8VGakySW2bQ33sE43X64aRSjxh7Ei \
+bip32 decode KzeBeJFoxNctzErrKH9GqBS8VGakySW2bQ33sE43X64aRSjxh7Ei --output-format=json \
   | jq '.'
 ```
 ```json
@@ -440,7 +453,7 @@ Decode public HEX key.
 > decode which network these keys were originally meant for.
 
 ```bash
-bip32 decode 028fb7e34b1d9f41c1b7c4a9f93d75a18b4bf0ef9537a270a4018e43214448ac0d \
+bip32 decode 028fb7e34b1d9f41c1b7c4a9f93d75a18b4bf0ef9537a270a4018e43214448ac0d --output-format=json \
   | jq '.'
 ```
 ```json
