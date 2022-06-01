@@ -1,11 +1,27 @@
 # bip32
-Bitcoin hierarchically deterministic (HD) key generation based on
-[BIP-32 Spec](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
+Generate Bitcoin wallet keys using mnemonic phrase.
 
-Please review the spec in above link to learn about how parent and
-child keys are generated and derived. In particular, the key generation
-depends not only on the mnemonic but also on the derivation path
-and network used.
+Bitcoin key generation has changed over the years and has nuances that
+are covered in following specs:
+* [BIP-32 Spec](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
+* [BIP-39 Spec](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki)
+* [BIP-44 Spec](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
+* [BIP-49 Spec](https://github.com/bitcoin/bips/blob/master/bip-0049.mediawiki)
+* [BIP-84 Spec](https://github.com/bitcoin/bips/blob/master/bip-0084.mediawiki)
+
+In particular, you may have seen bitcoin addresses in one of the following
+forms:
+* 1H1RmnHvTsgLBxvGke9XDPP74w7K9uVT9c, i.e., starting with `1`
+* 3LZoyoAc9TDXLGrGoWsmv3dtJNbBwm1HKz, i.e., starting with `3`
+* bc1q87e8lc7523q67qqjdnah6yk4g547nh50vavhlc, i.e. starting with `bc1`
+
+These addresses can all be traced back to single mnemonic sentence and are
+therefore, "derived" from a master key. In particular, addresses starting with
+`1` correspond to the spec `BIP-44`, whereas addresses starting with `3`
+correspond to the spec `BIP-49` and the ones starting with `bc1` correspond
+to the spec `BIP84`.
+
+More info on how to go about generating these keys is below.
 
 ## disclaimer
 > The use of this tool does not guarantee security or usability for any
@@ -25,56 +41,81 @@ Add autocompletion for `bash` to your `.bashrc`
 source <(bip32 completion bash)
 ```
 
-## generate keys
-Keys can be generated using a mnemonic (with or without an additional passphrase),
-or using a seed.
+## overview of key generation steps
+Keys can be generated using a mnemonic sentence, which is collection,
+typically of 12 to 24, random words.
 
 All mnemonic and seed generation can be handled by
 [bip39](https://github.com/kubetrail/bip39) CLI tool
-```bash
-bip39 gen
-```
-```text
-client sustain stumble prosper pepper maze prison view omit gold organ youth vintage tattoo practice mutual budget excite bubble economy quick conduct spot end
-```
 
-The default is to generate a 24 word mnemonic sequence. A shorter sequence can be generated
-using `--length` flag
+For example, a 12 word mnemonic can be generated as follows:
 ```bash
 bip39 gen --length=12
 ```
 ```text
-high human season brick chimney spoil open butter better spice refuse obey
+surround disagree build occur pluck main ignore define hurdle excess chicken gold
 ```
+
+Export mnemonic as an environment variable for use in next steps.
+```bash
+export MNEMONIC="surround disagree build occur pluck main ignore define hurdle excess chicken gold"
+```
+
+> Please note that mnemonic generation occurs using a cryptographic source
+> of randomness that is internal to the tool. Hence, security of such
+> mnemonic is inherently limited by the security of the random generator used.
+
+> All keys are derived from mnemonic in a deterministic way, therefore, the
+> security of Bitcoin keys is essentially limited by security of mnemonic.
+
+> Needless to say, please only use the mnemonic shown above for experimental
+> purposes and not for performing actual transactions. Generate a new mnemonic
+> and do not share with anyone!
 
 The high level sequence of events during a key generation is as follows:
 * A random generator is used to generate so-called `entropy`
 * `entropy` is used to generate a mnemonic sentence
-* Mnemonic sentence is combined with optional passphrase to generate `seed`
+* Mnemonic sentence is combined with optional passphrase to generate a `seed`
 * If a mnemonic language is different from english, it is first translated to english
-* Seed is used to generate the master key pair (private and public keys)
+* Seed is used to generate the master `ECDSA` key pair (private and public keys)
 * These are wrapped into so-called extended keys
 * Private extended key is used to generate the private WIF key (more info on WIF below)
 * Private WIF key is used to generate a public hex key
 * Public hex key is used to generate the address
+* Address type governs the type of address generated, i.e., either staring with `1`, `3`,
+or `bc1`. It also decided the prefix of extended keys, which can be either `xprv`, `yprv`
+or `zprv`
+* Similarly, choice of network, i.e., either `mainnet` or `testnet` also governs the
+form of extended keys.
 
-Last three steps are repeated for child key generation based on derivation path.
-
-Let's generate some keys:
+## key generation
+Assuming you stored mnemonic in an environment variable, private key and
+public address can be generated using a few defaults as follows:
 ```bash
-bip32 gen
+bip32 gen ${MNEMONIC}
 ```
-```text
-Enter mnemonic:  client sustain stumble prosper pepper maze prison view omit gold organ youth vintage tattoo practice mutual budget excite bubble economy quick conduct spot end
-seed: b66ad217f4bd1a7a9889cc86318ef218b72d4ef34d759facae297a65210325ce5de3b106f566be9be4f43a84298fc64cbd8b4419649ed59b3e4a0d5b8e706e7b
-xPrv: xprvA3MV9gbvFKuzyqBEfME4SGgybXA451htHMVR8eVwotHPAnpHYenLWirLRBrcK5NDX4Riq89v8weeNY7QNhfY5ZcDkCHqkJHzc5attHZie2Q
-xPub: xpub6GLqZC8p5hUJCKFhmNm4oQdi9YzYUURjeaR1w2uZNDpN3b9S6C6b4XApGTLjRxKwbQ8JJP4Hw1GhjLTCpyT1cwnYSozUVmyexLrUfHjBssR
-prvKeyWif: L1SbuQzhGFkGDuWQMfyUi71PXtH6BbgVFZjASh3hXiTAH3hrywLP
-pubKeyHex: 02b9d3c47c4523de30e0c228586277687b5ed5a49626b5f660c747e82bf936b203
-addr: 12u3DEDrEyY7vyRmfVpCjSvNZJeXXKC7Bf
-network: mainnet
+```yaml
+prvKeyWif: Ky7kJQEFQDCRhShHaZs7TSCEa1UqGhVZB6BhXUHf3T9pAG6q7987
+addr: 1MJ9PojuE1rA1E8wtrdQXjxaqZdsgddhoh
+```
+
+In order to explore the keys better, let's output all keys that are
+part of this step. This is done using `--show-all-keys` flag
+
+```bash
+bip32 gen --show-all-keys ${MNEMONIC}
+```
+```yaml
+seed: bf4848ce9688a8fc5e149aa038c454885a6727e0c7de50754cef7e506fb3d8a80d4c92b7cd77da542b1b6764a2513899c311ab2c7d9d192546e2d6442ac99e11
+xPrv: xprvA4HQhA4Br6afRrswRBRydnSPqHGAVFptd3iiMp8kuMMsuso4vUuPSb91AizescB7NwS8uHijxBK4L1J5nJj98be4cSTKthrPraRZiFttSPj
+xPub: xpub6HGm6fb5gU8xeLxQXCxyzvP8PK6etiYjzGeKACYNTgtrng8DU2DdzPTV1yvcwsjZ9o1UAUYq39RhLXBmJu66xMmAGGnDRGb4iLkP99rLmL5
+pubKeyHex: 022b70459564b65102394e088bdb68f8a80d386939e39319363377b00f23b21cc4
+prvKeyWif: Ky7kJQEFQDCRhShHaZs7TSCEa1UqGhVZB6BhXUHf3T9pAG6q7987
+addr: 1MJ9PojuE1rA1E8wtrdQXjxaqZdsgddhoh
+addrType: legacy
 derivationPath: m/44h/0h/0h/0/0
 coinType: btc
+network: mainnet
 ```
 
 `seed` is the hexadecimal seed used for generating master key.
@@ -95,211 +136,164 @@ byte and a checksum. Learn more about [WIF private key](https://learnmeabitcoin.
 `pubKeyHex` is a hexadecimal formatted public key bytes. These are raw bytes without
 any network info or key version in it.
 
-`addr` is the bitcoin address for receiving transactions that correspond to the private
-key.
+`addr` is the legacy bitcoin address for receiving transactions that correspond to the private
+key. `addrType` indicates type of the address, i.e., either `legacy`, `segwit-compatibe` or
+`segwit-native` etc.
 
 `network` and `coinType` indicate the blockchain on which these keys will work.
 
-> Please note that it is not only necessary to store mnemonic, but also necessary
-> to back up any passcode, derivation path and network info used for key generation.
-> It is impossible to trace the path backwards and infer these inputs from the keys.
+A secret passphrase can be additionally used in conjunction with mnemonic to apply an
+additional layer of security. Use of `passphrase` is enabled using `--use-passphrase` 
+flag.
 
-Use or `passphrase` is enabled using `--use-passphrase` flag. A `passphrase` is an
-additional layer of security on top of mnemonic. It, therefore, protects the mnemonic.
-
-A `passphrase` input is only allowed via STDIN and the user has to confirm it by entering
+A `passphrase` input is only allowed via `STDIN` and the user has to confirm it by entering
 it again.
 
 ```bash
-bip32 gen --use-passphrase
+bip32 gen --use-passphrase ${MNEMONIC}
 ```
-```text
-Enter mnemonic: high human season brick chimney spoil open butter better spice refuse obey
-Enter secret passphrase: 
-Enter secret passphrase again: 
-seed: 7ad1ceebbbcef39a1ceee573e6446c32e0bf047ee90daf8f84d0249ea160530fb9a5cfe17fe83cf835707e4e92cb327e53c971362e1b9020b90a3c14f2bf18db
-xPrv: xprvA3f5HGHwNfEtudV4P7Djj1rfdM3MTGxyDVzBE8QVv9T1i539j71MyfKUmnw2dSgFFeExPRDYWgvnUnqZJTuCoAAqAf9HnxZAR62rh2bxFSA
-xPub: xpub6GeRgmpqD2oC87ZXV8kk69oQBNsqrjgpaiun2Wp7UUyzasNJGeKcXTdxd3wnax6h64jUPovvTZUYcSvVDYRcwMSPXv3jQZiWMM5TmLTfKZ7
-prvKeyWif: L3Hk4ckie6rktaBfZEj3eY2czmD67rZd7RjyBTFtnhXrBxha22ZP
-pubKeyHex: 02b2cf26a0b6ab3ad6cee283f954b6952ac44da6c04232e0b381e80fa4cbf9a985
-addr: 1KtGCn7vzXCbj7kHKU61CxmctDvbwBJZNt
-network: mainnet
-derivationPath: m/44h/0h/0h/0/0
-coinType: btc
+```yaml
+Enter secret passphrase:
+Enter secret passphrase again:
+prvKeyWif: KzjwJtryjybsJjVvse22oG7f1pfQbYcj2E8gxbM6bivai3pLrczh
+addr: 181mk5LncqeKPEz1Z1KihzykXD5XKLTTr2
 ```
 
-Alternatively, pass mnemonic via STDIN pipe when a passphrase is not being used:
+### address types
+As mentioned before, three types of addresses can be derived from mnemonic.
+
+For instance `legacy` `P2PKH` addresses can be generated as follows, which is also the
+default:
 ```bash
-echo client sustain stumble prosper pepper maze prison view omit gold organ youth vintage tattoo practice mutual budget excite bubble economy quick conduct spot end \
-  | bip32 gen --output-format=json \
-  | jq '.'
+bip32 gen --addr-type=legacy ${MNEMONIC}
 ```
-```json
-{
-  "seed": "b66ad217f4bd1a7a9889cc86318ef218b72d4ef34d759facae297a65210325ce5de3b106f566be9be4f43a84298fc64cbd8b4419649ed59b3e4a0d5b8e706e7b",
-  "xPrv": "xprvA3MV9gbvFKuzyqBEfME4SGgybXA451htHMVR8eVwotHPAnpHYenLWirLRBrcK5NDX4Riq89v8weeNY7QNhfY5ZcDkCHqkJHzc5attHZie2Q",
-  "xPub": "xpub6GLqZC8p5hUJCKFhmNm4oQdi9YzYUURjeaR1w2uZNDpN3b9S6C6b4XApGTLjRxKwbQ8JJP4Hw1GhjLTCpyT1cwnYSozUVmyexLrUfHjBssR",
-  "prvKeyWif": "L1SbuQzhGFkGDuWQMfyUi71PXtH6BbgVFZjASh3hXiTAH3hrywLP",
-  "pubKeyHex": "02b9d3c47c4523de30e0c228586277687b5ed5a49626b5f660c747e82bf936b203",
-  "addr": "12u3DEDrEyY7vyRmfVpCjSvNZJeXXKC7Bf",
-  "network": "mainnet",
-  "derivationPath": "m/44h/0h/0h/0/0",
-  "coinType": "btc"
-}
+```yaml
+prvKeyWif: Ky7kJQEFQDCRhShHaZs7TSCEa1UqGhVZB6BhXUHf3T9pAG6q7987
+addr: 1MJ9PojuE1rA1E8wtrdQXjxaqZdsgddhoh
 ```
 
-Or skip mnemonic validation when using an invalid mnemonic
+`segwit` compatible `P2SH` addresses can be generated as follows:
 ```bash
-bip32 gen --skip-mnemonic-validation this is an invalid mnemonic
+bip32 gen --addr-type=segwit-compatible ${MNEMONIC}
 ```
-```text
-seed: bb06e6570ed0b71ac71e4feefeb3a7e2e4cf04ba80a065408150800f86583add8d7ba2ed117444a00f95ca8966ea2e7ff5c8a84b0f5b35a43388d76f0eca043f
-xPrv: xprvA3UmZrJ2YeNBdbx2oeNgxNTjhbRrpqAQZr1aeTmToDJLKU2eKCvo4jxScANisRUGWZnFz6Q2aw3fLFwfKSUkNcMvk3sYSqNuaouccauM6zb
-xPub: xpub6GU7yMpvP1vUr62VufuhKWQUFdGMEHtFw4wBSrB5MYqKCGMnrkF3cYGvTQG9mi7hNDGo7pfGhksNRCTuBwhsHTRmJdnLKP4ARLtmCAH2J6e
-prvKeyWif: L46QdcLXwjJAJrDcot65v1JkruUMfS4aY2jXwz52KR38Ki6zG1FB
-pubKeyHex: 02367a9d8a72dc738402cdbc6e0ba426f90b76b895322c3ff4a0c412d9bf1962f2
-addr: 1G7VNts7A9GGCus9whX8McPexcfxTCjuUq
-network: mainnet
-derivationPath: m/44h/0h/0h/0/0
-coinType: btc
+```yaml
+prvKeyWif: L5Nx5ePGYjN2TzoadVXorDQXrchWEtwuDQEnsC4SSztz9b4tcCWQ
+addr: 37vznvAgCmaKERDZmYaw3X4ArHracgVUfa
 ```
 
-> Please note that the mnemonic is independent of extra white spaces.
-> So, following two mnemonics will result in identical keys
+And finally, `segwit` native `Bech32` addresses can be generated as follows:
 ```bash
-bip32 gen "machine notice lobster hundred mutual creek earth upgrade sea price copy frost"
+bip32 gen --addr-type=segwit-native ${MNEMONIC}
 ```
-```text
-seed: 6b4eb91a3562f7d557e9ba09daa42141d37a9cb55ce1efab3bb728e13a93bb9be963406b6845459644c9f008b3a28a482ed8aafbdf982a600dd2c35b0648031d
-xPrv: xprvA3WunfZRAhVjKA3fFFJnPYbjvTraEuEuFyXejamSsbH1QQWxV7z6BKLicGGYhEuHpDTsnFH2NmC53zCLb49qxBZ6wUwFon36JwV9n2PcKjp
-xPub: xpub6GWGCB6K1542Xe88MGqnkgYUUVh4eMxkdCTFXyB4RvozHCr72fJLj7fCTYsdk3GxGTjVFeW9SZFAtykc2TV31gT6fwACFrTgzdgg3rJtTrV
-prvKeyWif: KwoacAwjNMGs8HdfjRh25D9edqFYuzMZhA9z6vaDGhvHCr9q4YoM
-pubKeyHex: 02e0c75a3986eda7c7da1abf844b9042ab5e987cdd9af76325073c638a563544e1
-addr: 1CnSnUkwcXSD26nRmHepDaWLJFrCVJgtsK
-network: mainnet
-derivationPath: m/44h/0h/0h/0/0
-coinType: btc
-```
-```bash
-bip32 gen "   machine    notice    lobster    hundred    mutual creek earth upgrade sea price copy frost   "
-```
-```text
-seed: 6b4eb91a3562f7d557e9ba09daa42141d37a9cb55ce1efab3bb728e13a93bb9be963406b6845459644c9f008b3a28a482ed8aafbdf982a600dd2c35b0648031d
-xPrv: xprvA3WunfZRAhVjKA3fFFJnPYbjvTraEuEuFyXejamSsbH1QQWxV7z6BKLicGGYhEuHpDTsnFH2NmC53zCLb49qxBZ6wUwFon36JwV9n2PcKjp
-xPub: xpub6GWGCB6K1542Xe88MGqnkgYUUVh4eMxkdCTFXyB4RvozHCr72fJLj7fCTYsdk3GxGTjVFeW9SZFAtykc2TV31gT6fwACFrTgzdgg3rJtTrV
-prvKeyWif: KwoacAwjNMGs8HdfjRh25D9edqFYuzMZhA9z6vaDGhvHCr9q4YoM
-pubKeyHex: 02e0c75a3986eda7c7da1abf844b9042ab5e987cdd9af76325073c638a563544e1
-addr: 1CnSnUkwcXSD26nRmHepDaWLJFrCVJgtsK
-network: mainnet
-derivationPath: m/44h/0h/0h/0/0
-coinType: btc
+```yaml
+prvKeyWif: L125eeMMWH93ZVb6NXEpQ5qXYPiKDF6Qy3AHE8UcBmh6SdcBvEfQ
+addr: bc1qsah54m5u94ktfymcv4jf656rqnu9dxnuhcjvx8
 ```
 
-Similarly, mnemonics from different languages are treated the same if their underlying `entropy` is the same.
-To illustrate this let's translate a mnemonic from English to Japanese and use the Japanese version to generate
-the keys
-```bash
-bip39 translate --from-language=english --to-language=japanese machine notice lobster hundred mutual creek earth upgrade sea price copy frost
-```
-```text
-たいちょう ちょさくけん ぞんび すごい だんわ きそう けとばす やおや はこぶ とめる きおち さばく
-```
+### verify public addresses using external wallet app
+At this point, it might be a good idea to verify these addresses
+match those produced by external wallet apps such as
+[Mycelium](https://play.google.com/store/apps/details?id=com.mycelium.wallet)
 
-Now generating the keys using Japanese version of mnemonic results in same keys as before
-```bash
-bip32 gen --mnemonic-language=Japanese たいちょう ちょさくけん ぞんび すごい だんわ きそう けとばす やおや はこぶ とめる きおち さばく
-```
-```text
-seed: 6b4eb91a3562f7d557e9ba09daa42141d37a9cb55ce1efab3bb728e13a93bb9be963406b6845459644c9f008b3a28a482ed8aafbdf982a600dd2c35b0648031d
-xPrv: xprvA3WunfZRAhVjKA3fFFJnPYbjvTraEuEuFyXejamSsbH1QQWxV7z6BKLicGGYhEuHpDTsnFH2NmC53zCLb49qxBZ6wUwFon36JwV9n2PcKjp
-xPub: xpub6GWGCB6K1542Xe88MGqnkgYUUVh4eMxkdCTFXyB4RvozHCr72fJLj7fCTYsdk3GxGTjVFeW9SZFAtykc2TV31gT6fwACFrTgzdgg3rJtTrV
-prvKeyWif: KwoacAwjNMGs8HdfjRh25D9edqFYuzMZhA9z6vaDGhvHCr9q4YoM
-pubKeyHex: 02e0c75a3986eda7c7da1abf844b9042ab5e987cdd9af76325073c638a563544e1
-addr: 1CnSnUkwcXSD26nRmHepDaWLJFrCVJgtsK
-network: mainnet
-derivationPath: m/44h/0h/0h/0/0
-coinType: btc
-```
+After installing the app, select the option to restore the wallet from backup
+instead of creating a new one.
 
-Use hex seed instead of a mnemonic to generate keys:
-```bash
-bip32 gen --input-hex-seed
-```
-```text
-Enter seed in hex: 6b4eb91a3562f7d557e9ba09daa42141d37a9cb55ce1efab3bb728e13a93bb9be963406b6845459644c9f008b3a28a482ed8aafbdf982a600dd2c35b0648031d
-seed: 6b4eb91a3562f7d557e9ba09daa42141d37a9cb55ce1efab3bb728e13a93bb9be963406b6845459644c9f008b3a28a482ed8aafbdf982a600dd2c35b0648031d
-xPrv: xprvA3WunfZRAhVjKA3fFFJnPYbjvTraEuEuFyXejamSsbH1QQWxV7z6BKLicGGYhEuHpDTsnFH2NmC53zCLb49qxBZ6wUwFon36JwV9n2PcKjp
-xPub: xpub6GWGCB6K1542Xe88MGqnkgYUUVh4eMxkdCTFXyB4RvozHCr72fJLj7fCTYsdk3GxGTjVFeW9SZFAtykc2TV31gT6fwACFrTgzdgg3rJtTrV
-prvKeyWif: KwoacAwjNMGs8HdfjRh25D9edqFYuzMZhA9z6vaDGhvHCr9q4YoM
-pubKeyHex: 02e0c75a3986eda7c7da1abf844b9042ab5e987cdd9af76325073c638a563544e1
-addr: 1CnSnUkwcXSD26nRmHepDaWLJFrCVJgtsK
-network: mainnet
-derivationPath: m/44h/0h/0h/0/0
-coinType: btc
-```
+Select 12 words as mnemonic length option and then enter your mnemonic that was
+used so far.
+
+Once the master key generation is done, go to the `Balance` tab and tap on
+qrcode to rotate through different key types and verify they are the same
+as generated in previous step.
 
 ## chain derivation path
-A chain derivation path can be provided such as `m`, `m/0`, `m/0H`, `m/0/234` etc.
+Keys generated so far used defaults for the so-called `derivation-path`, which
+governs how child keys are to be derived from the master key. It is a commandline
+flag `--derivation-path` and a few examples of such paths are as follows:
+* m
+* m/44h/0h/0h
+* m/49h/0h/0h/0/0
+* m/49'/0'/0'/0/0 and so on
 
-Generate root keys
+`m` stands for master key and when there is nothing else after `m`, no key derivation
+is performed and master key itself is used to derive the public address.
+
+The default value of `derivation-path` is `auto`, which signifies that the path will be
+chosen according to the `addr-type` flag. In particular, below is the mapping between
+`addr-type` and the `derivation-path`:
+```text
+addr type                         derivation path
+--------------------------------------------------
+legacy                            m/44'/0'/0'/0/0
+segwit compatible P2SH            m/49'/0'/0'/0/0
+segwit native Bech32              m/84'/0'/0'/0/0
+--------------------------------------------------
+```
+
+The way to read these derivation paths is as follows:
+> m / purpose / coin type / account / change / index
+
+where, `'` or `h` or `H` denotes so-called `hardened` value. Read more about it
+on BIP-44 spec.
+
+Thus, master private extended keys correspond to the derivation paths that do not
+account `change` and `index` values, such as `m/44'/0'/0'` or `m/49'/0'/0'` etc.
+
+Let's generate private extended keys for different address types:
+
+Make sure to use purpose value of `44` with address type of `legacy`:
 ```bash
-echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
-  | bip32 gen --input-hex-seed --derivation-path=m  --output-format=json \
-  | jq '.'
+bip32 gen \
+  --output-format=json \
+  --addr-type=legacy \
+  --show-all-keys \
+  --derivation-path=m/44h/0h/0h \
+  ${MNEMONIC} \
+  | jq '{xPub: .xPub, xPrv: .xPrv}'
 ```
 ```json
 {
-  "seed": "3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678",
-  "xPrv": "xprv9s21ZrQH143K48vGoLGRPxgo2JNkJ3J3fqkirQC2zVdk5Dgd5w14S7fRDyHH4dWNHUgkvsvNDCkvAwcSHNAQwhwgNMgZhLtQC63zxwhQmRv",
-  "xPub": "xpub661MyMwAqRbcGczjuMoRm6dXaLDEhW1u34gKenbeYqAix21mdUKJyuyu5F1rzYGVxyL6tmgBUAEPrEz92mBXjByMRiJdba9wpnN37RLLAXa",
-  "prvKeyWif": "KwrAWXgyy1L75ZBRp1PzHj2aWBoYcddgrEMfF6iBJFuw8adwRNLu",
-  "pubKeyHex": "026f6fedc9240f61daa9c7144b682a430a3a1366576f840bf2d070101fcbc9a02d",
-  "addr": "1GpWFBBE37FQumRkrVUL6HB1bqSWCuYsKt",
-  "network": "mainnet",
-  "derivationPath": "m",
-  "coinType": "btc"
+  "xPub": "xpub6D2evtM5oHGd4MxbT4oDhrgKAVXWgoRBLPQgPScQYS1LN1NUqaQ5jJ4azZxfbiUh9EUDurfuaZkFewCoNYyzXm84BDMp2PbS9mvcFwtvfLm",
+  "xPrv": "xprv9z3JXNpBxuiKqst8M3GDLijacTh2HLhKyAV5b4Cnz6UMVD3LJ35qBVk79JpMs6XoygJoaEmVd4vDNQrsfdBaXngkCrvvmSSLiExb2usfLG1"
 }
 ```
 
-Generate first hardened child of root key
+Please use purpose of `49` when using address type `segwit-compatible`
 ```bash
-echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
-  | bip32 gen --input-hex-seed --derivation-path=m/0h --output-format=json \
-  | jq '.'
+bip32 gen \
+  --output-format=json \
+  --addr-type=segwit-compatible \
+  --show-all-keys \
+  --derivation-path=m/49h/0h/0h \
+  ${MNEMONIC} \
+  | jq '{xPub: .xPub, xPrv: .xPrv}'
 ```
 ```json
 {
-  "seed": "3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678",
-  "xPrv": "xprv9vB7xEWwNp9kh1wQRfCCQMnZUEG21LpbR9NPCNN1dwhiZkjjeGRnaALmPXCX7SgjFTiCTT6bXes17boXtjq3xLpcDjzEuGLQBM5ohqkao9G",
-  "xPub": "xpub69AUMk3qDBi3uW1sXgjCmVjJ2G6WQoYSnNHyzkmdCHEhSZ4tBok37xfFEqHd2AddP56Tqp4o56AePAgCjYdvpW2PU2jbUPFKsav5ut6Ch1m",
-  "prvKeyWif": "KwFMsuZ3pmk7ebtbTiPirTpdcPkS6wvnSazU3bvixwiCw1bNQLhG",
-  "pubKeyHex": "039382d2b6003446792d2917f7ac4b3edf079a1a94dd4eb010dc25109dda680a9d",
-  "addr": "1KvwpccVR6CsN3ve2LZpxkSZ5od5262b75",
-  "network": "mainnet",
-  "derivationPath": "m/0h",
-  "coinType": "btc"
+  "xPub": "ypub6X1LhQqze25nBqKDhxpMUYueRM6VdALocQomFPPEtryESNvQ9d1mo8VsqyWMsZiHszffJXHPfgdBv2tS38Sk2FB7hbjYEMCp3TvZSr2CDaj",
+  "xPrv": "yprvAJ1zHuK6oeXUyMEkbwHM7QxusKG1DhcxFBtASzydLXSFZabFc5hXFLBPzij6CSnXoiPawEqBxYV8ZKSVuBoCzCEhZ3Rksjrc6WSJggMaTpa"
 }
 ```
 
-Generate fourth child of third hardened child of root key
+Similarly, please use purpose of `84` when using address type of `segwit-native`
 ```bash
-echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
-  | bip32 gen --input-hex-seed --derivation-path=m/2h/3 --output-format=json \
-  | jq '.'
+bip32 gen \
+  --output-format=json \
+  --addr-type=segwit-native \
+  --show-all-keys \
+  --derivation-path=m/84h/0h/0h \
+  ${MNEMONIC} \
+  | jq '{xPub: .xPub, xPrv: .xPrv}'
 ```
 ```json
 {
-  "seed": "3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678",
-  "xPrv": "xprv9xenovaMSsLaNKX8Yz2K1TEZ1b8VymYyji1SL6URcvAMT4EXKQTQxySayFFk2CA6BrhVaBkXWuzTSfNHMEuu1a6gCxZhdc5t9afpx7YRdq4",
-  "xPub": "xpub6Be9DS7FHEtsaobbf1ZKNbBHZcxzPEGq6vw38Ut3BFhLKrZfrwmfWmm4pWbqVMyPauABhiVdazRtW9ZBT7fpKR9Pbw5puUAsZaTSRhshGU4",
-  "prvKeyWif": "KzeBeJFoxNctzErrKH9GqBS8VGakySW2bQ33sE43X64aRSjxh7Ei",
-  "pubKeyHex": "028fb7e34b1d9f41c1b7c4a9f93d75a18b4bf0ef9537a270a4018e43214448ac0d",
-  "addr": "19q3NgbmofP5eB62zNawU68pxVwopdHDZ2",
-  "network": "mainnet",
-  "derivationPath": "m/2h/3",
-  "coinType": "btc"
+  "xPub": "zpub6rWTAsb9uWGq6RBefNvtyMtXdscHxQb5xLPPmyPN9p43978FzZqmxsPQ7eYu8qJb6xkPnDfP9ciZC5hoNv6ZoFKspuDgHuR1ad5SmSZkw7R",
+  "xPrv": "zprvAdX6mN4G58iXsw7BZMPtcDwo5qmoYwsEb7TnyaykbUX4GJo7T2XXR54vGM6DbnNMM9f9WEpsGhXABP2eyvNwQXzuwywQJH4opQNEwC1ZAmX"
 }
 ```
+
+### verify root extended keys using external wallet app
+Again, please ensure that these are indeed the private key values that you can export out of
+an external wallet app such as `Mycelium`.
 
 ## network selection
 Bitcoin networks `mainnet` (default) and `testnet` can be selected using `--network` flag.
@@ -307,40 +301,42 @@ Bitcoin networks `mainnet` (default) and `testnet` can be selected using `--netw
 Example below shows generation for `mainnet` using a hex seed
 ```bash
 echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
-  | bip32 gen --input-hex-seed --derivation-path=m/2h/3 --network=mainnet --output-format=json \
+  | bip32 gen --input-hex-seed --show-all-keys --network=mainnet --output-format=json \
   | jq '.'
 ```
 ```json
 {
   "seed": "3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678",
-  "xPrv": "xprv9xenovaMSsLaNKX8Yz2K1TEZ1b8VymYyji1SL6URcvAMT4EXKQTQxySayFFk2CA6BrhVaBkXWuzTSfNHMEuu1a6gCxZhdc5t9afpx7YRdq4",
-  "xPub": "xpub6Be9DS7FHEtsaobbf1ZKNbBHZcxzPEGq6vw38Ut3BFhLKrZfrwmfWmm4pWbqVMyPauABhiVdazRtW9ZBT7fpKR9Pbw5puUAsZaTSRhshGU4",
-  "prvKeyWif": "KzeBeJFoxNctzErrKH9GqBS8VGakySW2bQ33sE43X64aRSjxh7Ei",
-  "pubKeyHex": "028fb7e34b1d9f41c1b7c4a9f93d75a18b4bf0ef9537a270a4018e43214448ac0d",
-  "addr": "19q3NgbmofP5eB62zNawU68pxVwopdHDZ2",
-  "network": "mainnet",
-  "derivationPath": "m/2h/3",
-  "coinType": "btc"
+  "xPrv": "xprvA2X4DRgATz4wyfc3rjYT2o24MDk2s6hDsU6Xpzj7N5zqi2mGwkcojjDhmz8acg2zHDHWkL4rdavReSrJTWJNtsnmcU23qKCJeFixAdy27Y8",
+  "xPub": "xpub6FWQcwD4JMdFC9gWxm5TPvxnuFaXGZR5Eh28dP8ivRXpaq6RVHw4HXYBdFL69c4YbLETQnxh2Qo4j4VKDdYsPuttZNMC3dauvKKhqNLzWRb",
+  "pubKeyHex": "024bf0776f0b553c9acfe6d47206849012eae6c81bd8e9fc645b4e84cabcfddc76",
+  "prvKeyWif": "Ky2KivUN8WQ9Rdd9FyacLPmfqWy3mUMq4uqJPnXNoctFu15A79BH",
+  "addr": "16XvtkkJio36xFbuXjLMvEGRuLFB15ScKY",
+  "addrType": "legacy",
+  "derivationPath": "m/44h/0h/0h/0/0",
+  "coinType": "btc",
+  "network": "mainnet"
 }
 ```
 
 Same hex seed used for generation on `testnet` results in different keys.
 ```bash
 echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
-  | bip32 gen --input-hex-seed --derivation-path=m/2h/3 --network=testnet --output-format=json \
+  | bip32 gen --input-hex-seed --show-all-keys --network=testnet --output-format=json \
   | jq '.'
 ```
 ```json
 {
   "seed": "3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678",
-  "xPrv": "tprv8fKjbFtgr9Aey8kfDYspB6rYKiYiDHaz5FvZCWtt6teqEeycJmoAUip2tRRQ2ZYQZJEGaHNHgGaFuWv2UTFqpdNGjbn1Hxow4gRFPpNSMdh",
-  "xPub": "tpubDC1mjfvvzWrKrbnT7CYQaWWetk4eNcmteZXLV2wBXATE59ENwAckfDRu4Ygd1rvdNoh6KJ1W86FwCL3nqyX4CrbgfXq8azq79Y3rBjRaSFE",
-  "prvKeyWif": "cR1B7DFfPSKA9gL7hgxQCVwC7VtAdtbifSBWyeWZ2CiagBqB5jAk",
-  "pubKeyHex": "028fb7e34b1d9f41c1b7c4a9f93d75a18b4bf0ef9537a270a4018e43214448ac0d",
-  "addr": "mpLzfjgkcgpLRHZehwZKJ1M9pVYWjExGEV",
-  "network": "testnet",
-  "derivationPath": "m/2h/3",
-  "coinType": "btc"
+  "xPrv": "tprv8jBzzkzVsFu2aUqaXJPxCSe3fMAF6cjED21ehR9Zr4VKVdWMw7xZFUb9hAJEd3RJeepHkRgcnwWE7JQ3aieKhw4N97EMVfvMZMUNcLcSGf3",
+  "xPub": "tpubDFt39B2k1dahTwsNQx4YbrJAENgBFwv8nKcRywBsGLHiL7m8ZWn9RyD1sHQsg71nPEmN2NUZZWd7REyvcVQ7HMMBcy6VjAF9WGv7bPjpQuK",
+  "pubKeyHex": "024bf0776f0b553c9acfe6d47206849012eae6c81bd8e9fc645b4e84cabcfddc76",
+  "prvKeyWif": "cPPKBqUDZa6Qb56QePPjhiGjTkGTRvTX8wymWCytJjYG9kCHuwY8",
+  "addr": "mm3tBoqHXpUMjN5XFJJjk9UkmKqssxjVj1",
+  "addrType": "legacy",
+  "derivationPath": "m/44h/0h/0h/0/0",
+  "coinType": "btc",
+  "network": "testnet"
 }
 ```
 
@@ -349,47 +345,37 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
 ## derived keys
 Child keys can be derived using parent private or public keys and derivation paths. 
 
-For instance first child key can be derived using an extended public key:
+For instance, if we start with private extended key that was compared against
+exported key from `Mycelium` in previous steps, and derive the child key for
+`change=0` and `index=0`, it would correspond to the derivation path of `m/0/0`
+since the private extended key was already derived from the master key using
+derivatation path of `m/44h/0h/0h`:
 ```bash
-bip32 derive --derivation-path=m/0 xpub661MyMwAqRbcGaPMRtcCZ91tqAFfLKWdoSbr3PLUAFjVB6sTksegmK4NeEjVWiaYG3e3WgEDNsyGGVkghhjjbsksC7z9R3ZoFYWE3oo2tuG
+bip32 derive \
+  --derivation-path=m/0/0 \
+  xprv9z3JXNpBxuiKqst8M3GDLijacTh2HLhKyAV5b4Cnz6UMVD3LJ35qBVk79JpMs6XoygJoaEmVd4vDNQrsfdBaXngkCrvvmSSLiExb2usfLG1
 ```
-```text
-xPub: xpub68CAhn9KZZPV6xY9VgRxazetHmch9k7JbERL1G6ZsDdgsCnNgc8bRVt9cah3WmKzYCAZzHqErz8H7amaQwUjj524BejztnhdHyjsYcCFNCL
-pubKeyHex: 024fe10e81436925358a757f41250a3ea69ccdfcb80a15a6e90935ec7ac083fab8
-addr: 1J2cWcYafpAYkPGcR6Wu8ybjEUZL4G1Ukw
-network: mainnet
+```yaml
+xPrv: xprvA4HQhA4Br6afRrswRBRydnSPqHGAVFptd3iiMp8kuMMsuso4vUuPSb91AizescB7NwS8uHijxBK4L1J5nJj98be4cSTKthrPraRZiFttSPj
+xPub: xpub6HGm6fb5gU8xeLxQXCxyzvP8PK6etiYjzGeKACYNTgtrng8DU2DdzPTV1yvcwsjZ9o1UAUYq39RhLXBmJu66xMmAGGnDRGb4iLkP99rLmL5
+pubKeyHex: 022b70459564b65102394e088bdb68f8a80d386939e39319363377b00f23b21cc4
+prvKeyWif: Ky7kJQEFQDCRhShHaZs7TSCEa1UqGhVZB6BhXUHf3T9pAG6q7987
+addr: 1MJ9PojuE1rA1E8wtrdQXjxaqZdsgddhoh
 coinType: btc
+network: mainnet
 ```
 
-Alternatively, when no derivation path is provided the default behavior is to parse the key as it without
-any child key derivation. This helps to obtain address if needed
+As you can see the address `1MJ9PojuE1rA1E8wtrdQXjxaqZdsgddhoh` matches the one
+produced above using command:
 ```bash
-bip32 derive xpub661MyMwAqRbcGaPMRtcCZ91tqAFfLKWdoSbr3PLUAFjVB6sTksegmK4NeEjVWiaYG3e3WgEDNsyGGVkghhjjbsksC7z9R3ZoFYWE3oo2tuG
+bip32 gen --addr-type=legacy ${MNEMONIC}
 ```
-```text
-xPub: xpub661MyMwAqRbcGaPMRtcCZ91tqAFfLKWdoSbr3PLUAFjVB6sTksegmK4NeEjVWiaYG3e3WgEDNsyGGVkghhjjbsksC7z9R3ZoFYWE3oo2tuG
-pubKeyHex: 0367117eab2ef405c130c44f98b1e65be9047dd152811fb06550a66fd4889e2b6a
-addr: 14nATe3WojN6ojChza1TnzHWhmPUUs7vkX
-network: mainnet
-coinType: btc
+```yaml
+prvKeyWif: Ky7kJQEFQDCRhShHaZs7TSCEa1UqGhVZB6BhXUHf3T9pAG6q7987
+addr: 1MJ9PojuE1rA1E8wtrdQXjxaqZdsgddhoh
 ```
 
-Similarly, a private key can be used as input which further allows us to generate hardened keys:
-```bash
-bip32 derive --derivation-path=m/0h
-```
-```text
-Enter key: xprv9s21ZrQH143K46JtKs5CC15AH8RAvrnnSDgFEzvrbvCWJJYKDLLSDWjtnxhzPX3A1MMH4i2woK1JZRLzWof4MBVndpUNuWTqJGuMApJNLfN
-xPrv: xprv9uCpJGca4rNA4C6psKCLDRNFg9X2HHpXcwxNwSStMh4M7zik3cueWfjGKZFUQoyeMsikVnsrJVXqFA7VmoaT7cFKfjJ7xFMNCXtjaFkcyZ9
-xPub: xpub68CAhn9TuDvTGgBHyLjLaZJzEBMWgkYNzAsyjprVv2bKzo3tbADu4U3kApixKhaLxML26dDayM37WFZiAb4hbiJueGakp2BpXxTmAip5TTR
-prvKeyWif: L4YxuN6KWdMpL5reFZ4JmyNX4oDYjR8ztPnZti31b25kEsELpraQ
-pubKeyHex: 031527dba89db3032ccc4ae594aa4b775c0b99c743069f08b0a5f9e91fcd9d1180
-addr: 1NwX8P2KBAhJnMDpicqjibvYS63a2L3gcD
-network: mainnet
-coinType: btc
-```
-
-Generation of hardened keys is only allowed for parent private keys.
+> Generation of hardened keys is only allowed for parent private keys.
 
 ## decode keys
 While `derive` command is used for deriving child keys, `decode` works with a variety of key inputs:
@@ -469,19 +455,17 @@ Validity of the keys can be checked (for the most part)
 
 For instance, key below is valid
 ```bash
-bip32 validate
+bip32 validate xpub661MyMwAqRbcGczjuMoRm6dXaLDEhW1u34gKenbeYqAix21mdUKJyuyu5F1rzYGVxyL6tmgBUAEPrEz92mBXjByMRiJdba9wpnN37RLLAXa
 ```
 ```text
-Enter key: xpub661MyMwAqRbcGczjuMoRm6dXaLDEhW1u34gKenbeYqAix21mdUKJyuyu5F1rzYGVxyL6tmgBUAEPrEz92mBXjByMRiJdba9wpnN37RLLAXa
 key is valid
 ```
 
 However, this key is invalid.
 ```bash
-bip32 validate
+bip32 validate xpub661MyMwAqRbcEYS8w7XLSVeEsBXy79zSzH1J8vCdxAZningWLdN3zgtU6LBpB85b3D2yc8sfvZU521AAwdZafEz7mnzBBsz4wKY5fTtTQBm
 ```
 ```text
-Enter key: xpub661MyMwAqRbcEYS8w7XLSVeEsBXy79zSzH1J8vCdxAZningWLdN3zgtU6LBpB85b3D2yc8sfvZU521AAwdZafEz7mnzBBsz4wKY5fTtTQBm
 Error: private key with public key version mismatch
 Usage:
   bip32 validate [flags]
