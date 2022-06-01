@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"github.com/kubetrail/bip32/pkg/flags"
+	"github.com/kubetrail/bip32/pkg/keys"
 	"github.com/kubetrail/bip32/pkg/run"
 	"github.com/kubetrail/bip39/pkg/mnemonics"
 	"github.com/spf13/cobra"
@@ -63,8 +64,6 @@ generated after translating input mnemonic to English.
 
 Verify output using: http://bip32.org/
 
-References:
-
 `,
 	RunE: run.Gen,
 	Args: cobra.MaximumNArgs(24),
@@ -81,6 +80,7 @@ func init() {
 	f.Bool(flags.SkipMnemonicValidation, false, "Skip mnemonic validation")
 	// https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#serialization-format
 	f.String(flags.Network, flags.NetworkMainnet, "Network: mainnet or testnet")
+	f.String(flags.ScriptType, keys.ScriptTypeP2pkhOrP2sh, "Script type")
 
 	_ = genCmd.RegisterFlagCompletionFunc(
 		flags.Network,
@@ -94,7 +94,7 @@ func init() {
 		) {
 			return []string{
 					flags.NetworkMainnet,
-					flags.NetworkMainnet,
+					flags.NetworkTestnet,
 				},
 				cobra.ShellCompDirectiveDefault
 		},
@@ -136,13 +136,41 @@ func init() {
 			cobra.ShellCompDirective,
 		) {
 			return []string{
-					"example-derivation-paths",
 					flags.DerivationPath0,
 					flags.DerivationPath1,
 					flags.DerivationPath2,
 					flags.DerivationPath3,
 					flags.DerivationPath4,
 					flags.DerivationPath5,
+					flags.DerivationPath6,
+					flags.DerivationPath7,
+					flags.DerivationPath8,
+				},
+				cobra.ShellCompDirectiveDefault
+		},
+	)
+
+	_ = genCmd.RegisterFlagCompletionFunc(
+		flags.ScriptType,
+		func(
+			cmd *cobra.Command,
+			args []string,
+			toComplete string,
+		) (
+			[]string,
+			cobra.ShellCompDirective,
+		) {
+			return []string{
+					keys.ScriptTypeLegacy,
+					keys.ScriptTypeP2sh,
+					keys.ScriptTypeSegWitCompatible,
+					keys.ScriptTypeSegWitNative,
+					keys.ScriptTypeBech32,
+					keys.ScriptTypeP2pkhOrP2sh,
+					keys.ScriptTypeP2wpkhP2sh,
+					keys.ScriptTypeP2wshP2sh,
+					keys.ScriptTypeP2wpkh,
+					keys.ScriptTypeP2wsh,
 				},
 				cobra.ShellCompDirectiveDefault
 		},

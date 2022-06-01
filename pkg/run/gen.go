@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/kubetrail/bip32/pkg/flags"
 	"github.com/kubetrail/bip32/pkg/keys"
 	"github.com/kubetrail/bip39/pkg/mnemonics"
@@ -15,6 +13,7 @@ import (
 	"github.com/kubetrail/bip39/pkg/seeds"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 )
 
 func Gen(cmd *cobra.Command, args []string) error {
@@ -26,6 +25,7 @@ func Gen(cmd *cobra.Command, args []string) error {
 	_ = viper.BindPFlag(flags.InputHexSeed, cmd.Flag(flags.InputHexSeed))
 	_ = viper.BindPFlag(flags.Network, cmd.Flag(flags.Network))
 	_ = viper.BindPFlag(flags.MnemonicLanguage, cmd.Flag(flags.MnemonicLanguage))
+	_ = viper.BindPFlag(flags.ScriptType, cmd.Flag(flags.ScriptType))
 
 	usePassphrase := viper.GetBool(flags.UsePassphrase)
 	skipMnemonicValidation := viper.GetBool(flags.SkipMnemonicValidation)
@@ -33,6 +33,7 @@ func Gen(cmd *cobra.Command, args []string) error {
 	inputHexSeed := viper.GetBool(flags.InputHexSeed)
 	network := viper.GetString(flags.Network)
 	language := viper.GetString(flags.MnemonicLanguage)
+	scriptType := viper.GetString(flags.ScriptType)
 
 	prompt, err := prompts.Status()
 	if err != nil {
@@ -103,7 +104,14 @@ func Gen(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	key, err := keys.New(seed, network, derivationPath)
+	key, err := keys.New(
+		&keys.Config{
+			Seed:           seed,
+			Network:        network,
+			DerivationPath: derivationPath,
+			ScriptType:     scriptType,
+		},
+	)
 	if err != nil {
 		return fmt.Errorf("failed to generate key: %w", err)
 	}
