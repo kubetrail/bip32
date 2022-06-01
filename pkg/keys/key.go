@@ -51,26 +51,26 @@ func init() {
 
 	// https://electrum.readthedocs.io/en/latest/xpub_version_bytes.html#specification
 	keyVersions = map[string][]byte{
-		path.Join(CoinTypeBtc, NetworkTypeMainnet, ScriptTypeP2pkhOrP2sh, KeyTypePub): mustDecodeHex(xpub),
-		path.Join(CoinTypeBtc, NetworkTypeMainnet, ScriptTypeP2pkhOrP2sh, KeyTypePrv): mustDecodeHex(xprv),
-		path.Join(CoinTypeBtc, NetworkTypeTestnet, ScriptTypeP2pkhOrP2sh, KeyTypePub): mustDecodeHex(tpub),
-		path.Join(CoinTypeBtc, NetworkTypeTestnet, ScriptTypeP2pkhOrP2sh, KeyTypePrv): mustDecodeHex(tprv),
-		path.Join(CoinTypeBtc, NetworkTypeMainnet, ScriptTypeP2wpkhP2sh, KeyTypePub):  mustDecodeHex(ypub),
-		path.Join(CoinTypeBtc, NetworkTypeMainnet, ScriptTypeP2wpkhP2sh, KeyTypePrv):  mustDecodeHex(yprv),
-		path.Join(CoinTypeBtc, NetworkTypeTestnet, ScriptTypeP2wpkhP2sh, KeyTypePub):  mustDecodeHex(upub),
-		path.Join(CoinTypeBtc, NetworkTypeTestnet, ScriptTypeP2wpkhP2sh, KeyTypePrv):  mustDecodeHex(uprv),
-		path.Join(CoinTypeBtc, NetworkTypeMainnet, ScriptTypeP2wshP2sh, KeyTypePub):   mustDecodeHex(Ypub),
-		path.Join(CoinTypeBtc, NetworkTypeMainnet, ScriptTypeP2wshP2sh, KeyTypePrv):   mustDecodeHex(Yprv),
-		path.Join(CoinTypeBtc, NetworkTypeTestnet, ScriptTypeP2wshP2sh, KeyTypePub):   mustDecodeHex(Upub),
-		path.Join(CoinTypeBtc, NetworkTypeTestnet, ScriptTypeP2wshP2sh, KeyTypePrv):   mustDecodeHex(Uprv),
-		path.Join(CoinTypeBtc, NetworkTypeMainnet, ScriptTypeP2wpkh, KeyTypePub):      mustDecodeHex(zpub),
-		path.Join(CoinTypeBtc, NetworkTypeMainnet, ScriptTypeP2wpkh, KeyTypePrv):      mustDecodeHex(zprv),
-		path.Join(CoinTypeBtc, NetworkTypeTestnet, ScriptTypeP2wpkh, KeyTypePub):      mustDecodeHex(vpub),
-		path.Join(CoinTypeBtc, NetworkTypeTestnet, ScriptTypeP2wpkh, KeyTypePrv):      mustDecodeHex(vprv),
-		path.Join(CoinTypeBtc, NetworkTypeMainnet, ScriptTypeP2wsh, KeyTypePub):       mustDecodeHex(Zpub),
-		path.Join(CoinTypeBtc, NetworkTypeMainnet, ScriptTypeP2wsh, KeyTypePrv):       mustDecodeHex(Zprv),
-		path.Join(CoinTypeBtc, NetworkTypeTestnet, ScriptTypeP2wsh, KeyTypePub):       mustDecodeHex(Vpub),
-		path.Join(CoinTypeBtc, NetworkTypeTestnet, ScriptTypeP2wsh, KeyTypePrv):       mustDecodeHex(Vprv),
+		path.Join(CoinTypeBtc, NetworkTypeMainnet, AddrTypeP2pkhOrP2sh, KeyTypePub): mustDecodeHex(xpub),
+		path.Join(CoinTypeBtc, NetworkTypeMainnet, AddrTypeP2pkhOrP2sh, KeyTypePrv): mustDecodeHex(xprv),
+		path.Join(CoinTypeBtc, NetworkTypeTestnet, AddrTypeP2pkhOrP2sh, KeyTypePub): mustDecodeHex(tpub),
+		path.Join(CoinTypeBtc, NetworkTypeTestnet, AddrTypeP2pkhOrP2sh, KeyTypePrv): mustDecodeHex(tprv),
+		path.Join(CoinTypeBtc, NetworkTypeMainnet, AddrTypeP2wpkhP2sh, KeyTypePub):  mustDecodeHex(ypub),
+		path.Join(CoinTypeBtc, NetworkTypeMainnet, AddrTypeP2wpkhP2sh, KeyTypePrv):  mustDecodeHex(yprv),
+		path.Join(CoinTypeBtc, NetworkTypeTestnet, AddrTypeP2wpkhP2sh, KeyTypePub):  mustDecodeHex(upub),
+		path.Join(CoinTypeBtc, NetworkTypeTestnet, AddrTypeP2wpkhP2sh, KeyTypePrv):  mustDecodeHex(uprv),
+		path.Join(CoinTypeBtc, NetworkTypeMainnet, AddrTypeP2wshP2sh, KeyTypePub):   mustDecodeHex(Ypub),
+		path.Join(CoinTypeBtc, NetworkTypeMainnet, AddrTypeP2wshP2sh, KeyTypePrv):   mustDecodeHex(Yprv),
+		path.Join(CoinTypeBtc, NetworkTypeTestnet, AddrTypeP2wshP2sh, KeyTypePub):   mustDecodeHex(Upub),
+		path.Join(CoinTypeBtc, NetworkTypeTestnet, AddrTypeP2wshP2sh, KeyTypePrv):   mustDecodeHex(Uprv),
+		path.Join(CoinTypeBtc, NetworkTypeMainnet, AddrTypeP2wpkh, KeyTypePub):      mustDecodeHex(zpub),
+		path.Join(CoinTypeBtc, NetworkTypeMainnet, AddrTypeP2wpkh, KeyTypePrv):      mustDecodeHex(zprv),
+		path.Join(CoinTypeBtc, NetworkTypeTestnet, AddrTypeP2wpkh, KeyTypePub):      mustDecodeHex(vpub),
+		path.Join(CoinTypeBtc, NetworkTypeTestnet, AddrTypeP2wpkh, KeyTypePrv):      mustDecodeHex(vprv),
+		path.Join(CoinTypeBtc, NetworkTypeMainnet, AddrTypeP2wsh, KeyTypePub):       mustDecodeHex(Zpub),
+		path.Join(CoinTypeBtc, NetworkTypeMainnet, AddrTypeP2wsh, KeyTypePrv):       mustDecodeHex(Zprv),
+		path.Join(CoinTypeBtc, NetworkTypeTestnet, AddrTypeP2wsh, KeyTypePub):       mustDecodeHex(Vpub),
+		path.Join(CoinTypeBtc, NetworkTypeTestnet, AddrTypeP2wsh, KeyTypePrv):       mustDecodeHex(Vprv),
 	}
 
 	mainnetVersions = map[string]struct{}{
@@ -150,12 +150,23 @@ func New(config *Config) (*Key, error) {
 		strings.ToLower(config.ScriptType)
 
 	switch scriptType {
-	case ScriptTypeLegacy:
-		scriptType = ScriptTypeP2pkhOrP2sh
-	case ScriptTypeP2sh, ScriptTypeSegWitCompatible:
-		scriptType = ScriptTypeP2wpkhP2sh
-	case ScriptTypeSegWitNative, ScriptTypeBech32:
-		scriptType = ScriptTypeP2wpkh
+	case AddrTypeLegacy:
+		scriptType = AddrTypeP2pkhOrP2sh
+	case AddrTypeP2sh, AddrTypeSegWitCompatible:
+		scriptType = AddrTypeP2wpkhP2sh
+	case AddrTypeSegWitNative, AddrTypeBech32:
+		scriptType = AddrTypeP2wpkh
+	}
+
+	if derivationPath == "auto" {
+		switch scriptType {
+		case AddrTypeP2pkhOrP2sh:
+			derivationPath = "m/44h/0h/0h/0/0"
+		case AddrTypeP2wpkhP2sh, AddrTypeP2wshP2sh:
+			derivationPath = "m/49h/0h/0h/0/0"
+		case AddrTypeP2wpkh, AddrTypeP2wsh:
+			derivationPath = "m/84h/0h/0h/0/0"
+		}
 	}
 
 	switch network {

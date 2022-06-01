@@ -25,7 +25,7 @@ func Gen(cmd *cobra.Command, args []string) error {
 	_ = viper.BindPFlag(flags.InputHexSeed, cmd.Flag(flags.InputHexSeed))
 	_ = viper.BindPFlag(flags.Network, cmd.Flag(flags.Network))
 	_ = viper.BindPFlag(flags.MnemonicLanguage, cmd.Flag(flags.MnemonicLanguage))
-	_ = viper.BindPFlag(flags.ScriptType, cmd.Flag(flags.ScriptType))
+	_ = viper.BindPFlag(flags.AddrType, cmd.Flag(flags.AddrType))
 
 	usePassphrase := viper.GetBool(flags.UsePassphrase)
 	skipMnemonicValidation := viper.GetBool(flags.SkipMnemonicValidation)
@@ -33,7 +33,7 @@ func Gen(cmd *cobra.Command, args []string) error {
 	inputHexSeed := viper.GetBool(flags.InputHexSeed)
 	network := viper.GetString(flags.Network)
 	language := viper.GetString(flags.MnemonicLanguage)
-	scriptType := viper.GetString(flags.ScriptType)
+	scriptType := viper.GetString(flags.AddrType)
 
 	prompt, err := prompts.Status()
 	if err != nil {

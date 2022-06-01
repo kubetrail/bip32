@@ -73,14 +73,14 @@ func init() {
 	rootCmd.AddCommand(genCmd)
 	f := genCmd.Flags()
 
-	f.String(flags.DerivationPath, flags.DerivationPath0, "Chain Derivation path")
+	f.String(flags.DerivationPath, flags.DerivationPathAuto, "Chain Derivation path")
 	f.Bool(flags.UsePassphrase, false, "Prompt for secret passphrase")
 	f.Bool(flags.InputHexSeed, false, "Treat input as hex seed instead of mnemonic")
 	f.String(flags.MnemonicLanguage, mnemonics.LanguageEnglish, "Mnemonic language")
 	f.Bool(flags.SkipMnemonicValidation, false, "Skip mnemonic validation")
 	// https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#serialization-format
 	f.String(flags.Network, flags.NetworkMainnet, "Network: mainnet or testnet")
-	f.String(flags.ScriptType, keys.ScriptTypeP2pkhOrP2sh, "Script type")
+	f.String(flags.AddrType, keys.AddrTypeP2pkhOrP2sh, "Script type")
 
 	_ = genCmd.RegisterFlagCompletionFunc(
 		flags.Network,
@@ -151,7 +151,7 @@ func init() {
 	)
 
 	_ = genCmd.RegisterFlagCompletionFunc(
-		flags.ScriptType,
+		flags.AddrType,
 		func(
 			cmd *cobra.Command,
 			args []string,
@@ -161,16 +161,16 @@ func init() {
 			cobra.ShellCompDirective,
 		) {
 			return []string{
-					keys.ScriptTypeLegacy,
-					keys.ScriptTypeP2sh,
-					keys.ScriptTypeSegWitCompatible,
-					keys.ScriptTypeSegWitNative,
-					keys.ScriptTypeBech32,
-					keys.ScriptTypeP2pkhOrP2sh,
-					keys.ScriptTypeP2wpkhP2sh,
-					keys.ScriptTypeP2wshP2sh,
-					keys.ScriptTypeP2wpkh,
-					keys.ScriptTypeP2wsh,
+					keys.AddrTypeLegacy,
+					keys.AddrTypeP2sh,
+					keys.AddrTypeSegWitCompatible,
+					keys.AddrTypeSegWitNative,
+					keys.AddrTypeBech32,
+					keys.AddrTypeP2pkhOrP2sh,
+					keys.AddrTypeP2wpkhP2sh,
+					keys.AddrTypeP2wshP2sh,
+					keys.AddrTypeP2wpkh,
+					keys.AddrTypeP2wsh,
 				},
 				cobra.ShellCompDirectiveDefault
 		},
