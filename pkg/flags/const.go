@@ -8,6 +8,7 @@ const (
 	Network                = "network"
 	MnemonicLanguage       = "mnemonic-language"
 	AddrType               = "addr-type"
+	ShowAllKeys            = "show-all-keys"
 )
 
 const (

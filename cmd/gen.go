@@ -81,6 +81,7 @@ func init() {
 	// https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#serialization-format
 	f.String(flags.Network, flags.NetworkMainnet, "Network: mainnet or testnet")
 	f.String(flags.AddrType, keys.AddrTypeP2pkhOrP2sh, "Script type")
+	f.Bool(flags.ShowAllKeys, false, "Show all keys")
 
 	_ = genCmd.RegisterFlagCompletionFunc(
 		flags.Network,

@@ -122,12 +122,13 @@ type Key struct {
 	Seed           string `json:"seed,omitempty" yaml:"seed,omitempty"`
 	XPrv           string `json:"xPrv,omitempty" yaml:"xPrv,omitempty"`
 	XPub           string `json:"xPub,omitempty" yaml:"xPub,omitempty"`
-	PrvKeyWif      string `json:"prvKeyWif,omitempty" yaml:"prvKeyWif,omitempty"`
 	PubKeyHex      string `json:"pubKeyHex,omitempty" yaml:"pubKeyHex,omitempty"`
+	PrvKeyWif      string `json:"prvKeyWif,omitempty" yaml:"prvKeyWif,omitempty"`
 	Addr           string `json:"addr,omitempty" yaml:"addr,omitempty"`
-	Network        string `json:"network,omitempty" yaml:"network,omitempty"`
+	AddrType       string `json:"addrType,omitempty" yaml:"addrType,omitempty"`
 	DerivationPath string `json:"derivationPath,omitempty" yaml:"derivationPath,omitempty"`
 	CoinType       string `json:"coinType,omitempty" yaml:"coinType,omitempty"`
+	Network        string `json:"network,omitempty" yaml:"network,omitempty"`
 	segWitNested   string
 	segWitBech32   string
 }
@@ -149,6 +150,8 @@ func New(config *Config) (*Key, error) {
 		strings.ToLower(config.DerivationPath),
 		strings.ToLower(config.ScriptType)
 
+	var addrType string
+
 	switch scriptType {
 	case AddrTypeLegacy:
 		scriptType = AddrTypeP2pkhOrP2sh
@@ -167,6 +170,15 @@ func New(config *Config) (*Key, error) {
 		case AddrTypeP2wpkh, AddrTypeP2wsh:
 			derivationPath = "m/84h/0h/0h/0/0"
 		}
+	}
+
+	switch scriptType {
+	case AddrTypeP2pkhOrP2sh:
+		addrType = AddrTypeLegacy
+	case AddrTypeP2wpkhP2sh, AddrTypeP2wshP2sh:
+		addrType = fmt.Sprintf("%s, %s", AddrTypeSegWitCompatible, AddrTypeP2sh)
+	case AddrTypeP2wpkh, AddrTypeP2wsh:
+		addrType = fmt.Sprintf("%s, %s", AddrTypeSegWitNative, AddrTypeBech32)
 	}
 
 	switch network {
@@ -206,6 +218,7 @@ func New(config *Config) (*Key, error) {
 
 	key.Seed = hex.EncodeToString(seed)
 	key.DerivationPath = derivationPath
+	key.AddrType = addrType
 
 	switch scriptType {
 	case AddrTypeP2pkhOrP2sh:

@@ -26,6 +26,7 @@ func Gen(cmd *cobra.Command, args []string) error {
 	_ = viper.BindPFlag(flags.Network, cmd.Flag(flags.Network))
 	_ = viper.BindPFlag(flags.MnemonicLanguage, cmd.Flag(flags.MnemonicLanguage))
 	_ = viper.BindPFlag(flags.AddrType, cmd.Flag(flags.AddrType))
+	_ = viper.BindPFlag(flags.ShowAllKeys, cmd.Flag(flags.ShowAllKeys))
 
 	usePassphrase := viper.GetBool(flags.UsePassphrase)
 	skipMnemonicValidation := viper.GetBool(flags.SkipMnemonicValidation)
@@ -34,6 +35,7 @@ func Gen(cmd *cobra.Command, args []string) error {
 	network := viper.GetString(flags.Network)
 	language := viper.GetString(flags.MnemonicLanguage)
 	scriptType := viper.GetString(flags.AddrType)
+	showAllKeys := viper.GetBool(flags.ShowAllKeys)
 
 	prompt, err := prompts.Status()
 	if err != nil {
@@ -114,6 +116,21 @@ func Gen(cmd *cobra.Command, args []string) error {
 	)
 	if err != nil {
 		return fmt.Errorf("failed to generate key: %w", err)
+	}
+
+	// show less information if not specifically asked
+	if !showAllKeys {
+		key = &keys.Key{
+			Seed:           "",
+			XPrv:           "",
+			XPub:           "",
+			PubKeyHex:      "",
+			PrvKeyWif:      key.PrvKeyWif,
+			Addr:           key.Addr,
+			Network:        "",
+			DerivationPath: "",
+			CoinType:       "",
+		}
 	}
 
 	switch persistentFlags.OutputFormat {
