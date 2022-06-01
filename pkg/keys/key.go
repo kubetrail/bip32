@@ -125,11 +125,11 @@ type Key struct {
 	PrvKeyWif      string `json:"prvKeyWif,omitempty" yaml:"prvKeyWif,omitempty"`
 	PubKeyHex      string `json:"pubKeyHex,omitempty" yaml:"pubKeyHex,omitempty"`
 	Addr           string `json:"addr,omitempty" yaml:"addr,omitempty"`
-	SegWitNested   string `json:"segWitNested,omitempty" yaml:"segWitNested,omitempty"`
-	SegWitBech32   string `json:"segWitBech32,omitempty" yaml:"segWitBech32,omitempty"`
 	Network        string `json:"network,omitempty" yaml:"network,omitempty"`
 	DerivationPath string `json:"derivationPath,omitempty" yaml:"derivationPath,omitempty"`
 	CoinType       string `json:"coinType,omitempty" yaml:"coinType,omitempty"`
+	segWitNested   string
+	segWitBech32   string
 }
 
 type Config struct {
@@ -206,6 +206,15 @@ func New(config *Config) (*Key, error) {
 
 	key.Seed = hex.EncodeToString(seed)
 	key.DerivationPath = derivationPath
+
+	switch scriptType {
+	case AddrTypeP2pkhOrP2sh:
+		key.segWitNested, key.segWitBech32 = "", ""
+	case AddrTypeP2wpkhP2sh, AddrTypeP2wshP2sh:
+		key.Addr, key.segWitNested, key.segWitBech32 = key.segWitNested, "", ""
+	case AddrTypeP2wpkh, AddrTypeP2wsh:
+		key.Addr, key.segWitNested, key.segWitBech32 = key.segWitBech32, "", ""
+	}
 
 	return key, nil
 }
@@ -458,8 +467,8 @@ func extendedKeyToKey(key *bip32.Key) (*Key, error) {
 		PrvKeyWif:    prvKeyWif,
 		PubKeyHex:    hex.EncodeToString(pubKey.Key),
 		Addr:         addr,
-		SegWitNested: segwitNested,
-		SegWitBech32: segwitBech32,
+		segWitNested: segwitNested,
+		segWitBech32: segwitBech32,
 		Network:      network,
 		CoinType:     CoinTypeBtc,
 	}, nil
