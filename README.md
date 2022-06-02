@@ -538,6 +538,74 @@ passed bip44 test matrix
 passed bip32 test matrix
 ```
 
+## try it on testnet
+First generate a mnemonic using 
+[bip39](https://github.com/kubetrail/bip39) and then secure it on Google cloud secret
+engine using [mksecret](https://github.com/kubetrail/mksecret)
+
+You may also need [qrcode](https://github.com/kubetrail/qrcode) to display Bitcoin
+addresses as qr codes for easier workflow with cellphone based wallets
+
+Finally, you will need [btcio](https://github.com/kubetrail/btcio) to inspect
+blocks, transactions and UTXO's
+
+```bash
+mksecret set --name=my-bitcoin-testnet-mnemonic-phrase $(bip39 gen --length=12)
+```
+```text
+canvas title buffalo digital cash cement cabin capable satisfy axis mandate heavy
+```
+
+Generate qrcode for receiving addresses. Generate all three types of addresses,
+i.e., `legacy`, `segwit compatible` `P2SH` and `segwit native` `Bech32` formatted
+addresses:
+
+Legacy address:
+```bash
+mksecret get my-bitcoin-testnet-mnemonic-phrase \
+  | bip32 gen \
+    --network=testnet \
+    --addr-type=legacy \
+    --output-format=json \
+  | jq -r '.addr' \
+  | qrcode gen
+```
+
+P2SH SegWit compatible address:
+```bash
+mksecret get my-bitcoin-testnet-mnemonic-phrase \
+  | bip32 gen \
+    --network=testnet \
+    --addr-type=segwit-compatible \
+    --output-format=json \
+  | jq -r '.addr' \
+  | qrcode gen
+```
+
+SegWit native Bech32 address:
+```bash
+mksecret get my-bitcoin-testnet-mnemonic-phrase \
+  | bip32 gen \
+    --network=testnet \
+    --addr-type=segwit-native \
+    --output-format=json \
+  | jq -r '.addr' \
+  | qrcode gen
+```
+
+Using a funded testnet wallet send Bitcoins on these addresses.
+Then verify on explorer to ensure funds have been transferred and
+confirmed.
+
+Find out transaction hash for each of these transactions. Also make sure
+you have a Bitcoin testnet node running on localhost and it is synced up
+with the peers to the latest block.
+
+Inspect UTXO's for the addresses in these transactions
+```text
+btcio utxo --tx-hash=<your-transaction-hash> | jq '.'
+```
+
 ## references
 * [BIP-32 Spec](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
 * [BIP-44 Spec](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
