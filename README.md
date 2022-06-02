@@ -375,6 +375,33 @@ prvKeyWif: Ky7kJQEFQDCRhShHaZs7TSCEa1UqGhVZB6BhXUHf3T9pAG6q7987
 addr: 1MJ9PojuE1rA1E8wtrdQXjxaqZdsgddhoh
 ```
 
+Similarly, extended keys from other address types can be used:
+```bash
+bip32 derive \
+  --derivation-path=m/0/0 \
+  yprvAJ1zHuK6oeXUyMEkbwHM7QxusKG1DhcxFBtASzydLXSFZabFc5hXFLBPzij6CSnXoiPawEqBxYV8ZKSVuBoCzCEhZ3Rksjrc6WSJggMaTpa
+```
+```yaml
+xPrv: yprvAMnfCAc35Zzftqq3WA8yhmD7juNk1UykJBUtc6QdWJkAoQJUajnCgxEc6KJwwMYTYzETw986nt6qVLmEMAbUYMiRcWuS8kvgAZKUdwHT5aC
+xPub: ypub6an1bg8vuwYy7KuWcBfz4u9rHwDEQwhbfQQVQUpF4eH9gCdd8H6TEkZ5wasZcRfWY1U8ZYBTHquqSJbxMg1r6WNC3Zwxmwnt8SCxmirsu2G
+pubKeyHex: 03397f9677279f78472b1c9528a760eb84ebb3c6019a5dfa6bbeb971cf58ae173b
+prvKeyWif: L5Nx5ePGYjN2TzoadVXorDQXrchWEtwuDQEnsC4SSztz9b4tcCWQ
+addr: 37vznvAgCmaKERDZmYaw3X4ArHracgVUfa
+addrType: segwit-compatible, p2sh
+coinType: btc
+network: mainnet
+```
+
+As you can see the address `37vznvAgCmaKERDZmYaw3X4ArHracgVUfa` is the same as that generated 
+previously using following command for address type of `segwit-compatible`
+```bash
+bip32 gen --addr-type=segwit-compatible ${MNEMONIC}
+```
+```yaml
+prvKeyWif: L5Nx5ePGYjN2TzoadVXorDQXrchWEtwuDQEnsC4SSztz9b4tcCWQ
+addr: 37vznvAgCmaKERDZmYaw3X4ArHracgVUfa
+```
+
 > Generation of hardened keys is only allowed for parent private keys.
 
 ## decode keys

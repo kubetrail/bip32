@@ -35,20 +35,22 @@ var netParams = map[string]*chaincfg.Params{
 }
 
 var (
-	keyVersions     map[string][]byte
-	mainnetVersions map[string]struct{}
-	testnetVersions map[string]struct{}
+	keyVersions       map[string][]byte
+	mainnetVersions   map[string]struct{}
+	testnetVersions   map[string]struct{}
+	versionToVersions map[string][]string
+	versionToAddrType map[string]string
 )
 
-func init() {
-	mustDecodeHex := func(input string) []byte {
-		b, err := hex.DecodeString(input)
-		if err != nil {
-			panic(err)
-		}
-		return b
+func mustDecodeHex(input string) []byte {
+	b, err := hex.DecodeString(input)
+	if err != nil {
+		panic(err)
 	}
+	return b
+}
 
+func init() {
 	// https://electrum.readthedocs.io/en/latest/xpub_version_bytes.html#specification
 	keyVersions = map[string][]byte{
 		path.Join(CoinTypeBtc, NetworkTypeMainnet, AddrTypeP2pkhOrP2sh, KeyTypePub): mustDecodeHex(xpub),
@@ -97,6 +99,56 @@ func init() {
 		vprv: {},
 		Vpub: {},
 		Vprv: {},
+	}
+
+	// versionToVersions is used to detect input extended key version
+	// and thereby assign bip32 pkg key versions, hence each detected
+	// key version, whether from private key or public key, is matched
+	// against a tuple of corresponding public and private key versions
+	versionToVersions = map[string][]string{
+		xpub: {xpub, xprv},
+		xprv: {xpub, xprv},
+		ypub: {ypub, yprv},
+		yprv: {ypub, yprv},
+		Ypub: {Ypub, Yprv},
+		Yprv: {Ypub, Yprv},
+		zpub: {zpub, zprv},
+		zprv: {zpub, zprv},
+		Zpub: {Zpub, Zprv},
+		Zprv: {Zpub, Zprv},
+		tpub: {tpub, tprv},
+		tprv: {tpub, tprv},
+		upub: {upub, uprv},
+		uprv: {upub, uprv},
+		Upub: {Upub, Uprv},
+		Uprv: {Upub, Uprv},
+		vpub: {vpub, vprv},
+		vprv: {vpub, vprv},
+		Vpub: {Vpub, Vprv},
+		Vprv: {Vpub, Vprv},
+	}
+
+	versionToAddrType = map[string]string{
+		xpub: AddrTypeP2pkhOrP2sh,
+		xprv: AddrTypeP2pkhOrP2sh,
+		ypub: AddrTypeP2wpkhP2sh,
+		yprv: AddrTypeP2wpkhP2sh,
+		Ypub: AddrTypeP2wshP2sh,
+		Yprv: AddrTypeP2wshP2sh,
+		zpub: AddrTypeP2wpkh,
+		zprv: AddrTypeP2wpkh,
+		Zpub: AddrTypeP2wsh,
+		Zprv: AddrTypeP2wsh,
+		tpub: AddrTypeP2pkhOrP2sh,
+		tprv: AddrTypeP2pkhOrP2sh,
+		upub: AddrTypeP2wpkhP2sh,
+		uprv: AddrTypeP2wpkhP2sh,
+		Upub: AddrTypeP2wshP2sh,
+		Uprv: AddrTypeP2wshP2sh,
+		vpub: AddrTypeP2wpkh,
+		vprv: AddrTypeP2wpkh,
+		Vpub: AddrTypeP2wsh,
+		Vprv: AddrTypeP2wsh,
 	}
 }
 
@@ -331,17 +383,48 @@ func DecodeExtendedKey(keyString string) (*Key, error) {
 }
 
 func Derive(keyString string, derivationPath string) (*Key, error) {
-	key, err := bip32.B58Deserialize(keyString)
+	bip32Key, err := bip32.B58Deserialize(keyString)
 	if err != nil {
 		return nil, fmt.Errorf("failed to deserialize key: %w", err)
 	}
 
-	key, err = extendedKeyToDerivedExtendedKey(key, derivationPath)
+	versions, ok := versionToVersions[hex.EncodeToString(bip32Key.Version)]
+	if !ok {
+		return nil, fmt.Errorf("failed to identity valid key version: %w", err)
+	}
+
+	bip32.PublicWalletVersion = mustDecodeHex(versions[0])
+	bip32.PrivateWalletVersion = mustDecodeHex(versions[1])
+
+	bip32Key, err = extendedKeyToDerivedExtendedKey(bip32Key, derivationPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to derive extended key: %w", err)
 	}
 
-	return extendedKeyToKey(key)
+	key, err := extendedKeyToKey(bip32Key)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get key from extended key")
+	}
+
+	switch versionToAddrType[hex.EncodeToString(bip32Key.Version)] {
+	case AddrTypeP2pkhOrP2sh:
+		key.segWitNested, key.segWitBech32 = "", ""
+	case AddrTypeP2wpkhP2sh, AddrTypeP2wshP2sh:
+		key.Addr, key.segWitNested, key.segWitBech32 = key.segWitNested, "", ""
+	case AddrTypeP2wpkh, AddrTypeP2wsh:
+		key.Addr, key.segWitNested, key.segWitBech32 = key.segWitBech32, "", ""
+	}
+
+	switch versionToAddrType[hex.EncodeToString(bip32Key.Version)] {
+	case AddrTypeP2pkhOrP2sh:
+		key.AddrType = AddrTypeLegacy
+	case AddrTypeP2wpkhP2sh, AddrTypeP2wshP2sh:
+		key.AddrType = fmt.Sprintf("%s, %s", AddrTypeSegWitCompatible, AddrTypeP2sh)
+	case AddrTypeP2wpkh, AddrTypeP2wsh:
+		key.AddrType = fmt.Sprintf("%s, %s", AddrTypeSegWitNative, AddrTypeBech32)
+	}
+
+	return key, nil
 }
 
 func extendedKeyToDerivedExtendedKey(key *bip32.Key, derivationPath string) (*bip32.Key, error) {
