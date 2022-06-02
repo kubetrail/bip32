@@ -219,3 +219,72 @@ if $(echo xpub661MyMwAqRbcEYS8w7XLSVeEsBXy79zSzH1J8vCdxAZningWLdN3zgtU6Q5JXayek4
 then echo validation failed; else echo -n "ok "; fi
 
 echo
+
+
+# test bunch of addresses generated using following mnemonic
+# validate using: https://iancoleman.io/bip39/#english
+MNEMONIC="clown tragic float hat law oven crew figure salt push analyst script"
+
+for line in $(cat bip84.csv); do
+  derivationPath=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $1}')
+  addrExpected=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $2}')
+  addrGot=$(bip32 gen \
+    --addr-type=segwit-native \
+    --derivation-path=${derivationPath} \
+    --output-format=json \
+    ${MNEMONIC} \
+    | jq -r '.addr')
+  if [[ "${addrGot}" != "${addrExpected}" ]]; then
+    echo "expected ${addrExpected}, got ${addrGot} while running bip84 tests"
+    exit 1
+  fi
+done
+echo "passed bip84 test matrix"
+
+for line in $(cat bip49.csv); do
+  derivationPath=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $1}')
+  addrExpected=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $2}')
+  addrGot=$(bip32 gen \
+    --addr-type=segwit-compatible \
+    --derivation-path=${derivationPath} \
+    --output-format=json \
+    ${MNEMONIC} \
+    | jq -r '.addr')
+  if [[ "${addrGot}" != "${addrExpected}" ]]; then
+    echo "expected ${addrExpected}, got ${addrGot} while running bip49 tests"
+    exit 1
+  fi
+done
+echo "passed bip49 test matrix"
+
+for line in $(cat bip44.csv); do
+  derivationPath=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $1}')
+  addrExpected=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $2}')
+  addrGot=$(bip32 gen \
+    --addr-type=legacy \
+    --derivation-path=${derivationPath} \
+    --output-format=json \
+    ${MNEMONIC} \
+    | jq -r '.addr')
+  if [[ "${addrGot}" != "${addrExpected}" ]]; then
+    echo "expected ${addrExpected}, got ${addrGot} while running bip44 tests"
+    exit 1
+  fi
+done
+echo "passed bip44 test matrix"
+
+for line in $(cat bip32.csv); do
+  derivationPath=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $1}')
+  addrExpected=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $2}')
+  addrGot=$(bip32 gen \
+    --addr-type=legacy \
+    --derivation-path=${derivationPath} \
+    --output-format=json \
+    ${MNEMONIC} \
+    | jq -r '.addr')
+  if [[ "${addrGot}" != "${addrExpected}" ]]; then
+    echo "expected ${addrExpected}, got ${addrGot} while running bip32 tests"
+    exit 1
+  fi
+done
+echo "passed bip32 test matrix"

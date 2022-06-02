@@ -531,6 +531,11 @@ ok ok ok ok ok ok
 
 https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#test-vector-5
 ok ok ok ok ok ok ok ok ok ok ok ok ok ok ok validation failed
+
+passed bip84 test matrix
+passed bip49 test matrix
+passed bip44 test matrix
+passed bip32 test matrix
 ```
 
 ## references
