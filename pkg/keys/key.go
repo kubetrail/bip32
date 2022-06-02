@@ -202,8 +202,22 @@ func New(config *Config) (*Key, error) {
 		strings.ToLower(config.DerivationPath),
 		strings.ToLower(config.AddrType)
 
+	switch network {
+	case NetworkTypeMainnet, NetworkTypeTestnet:
+	default:
+		return nil, fmt.Errorf("invalid or unsupported network: %s. allowed networks are %v", network,
+			[]string{NetworkTypeMainnet, NetworkTypeTestnet},
+		)
+	}
+
+	// when using BIP-32 address type, the default behavior of the
+	// derivation path is simply m/0/0
+	if derivationPath == "auto" && addrType == AddrTypeBip32 {
+		derivationPath = "m/0/0"
+	}
+
 	switch addrType {
-	case AddrTypeLegacy, AddrTypeBip44:
+	case AddrTypeLegacy, AddrTypeBip44, AddrTypeBip32:
 		addrType = AddrTypeP2pkhOrP2sh
 	case AddrTypeP2sh, AddrTypeSegWitCompatible, AddrTypeBip49:
 		addrType = AddrTypeP2wpkhP2sh
@@ -211,23 +225,30 @@ func New(config *Config) (*Key, error) {
 		addrType = AddrTypeP2wpkh
 	}
 
+	// coin type is 0h for BTC mainnet and
+	// 1h for BTC testnet per
+	// https://github.com/satoshilabs/slips/blob/master/slip-0044.md
 	if derivationPath == "auto" {
-		switch addrType {
-		case AddrTypeP2pkhOrP2sh:
-			derivationPath = "m/44h/0h/0h/0/0"
-		case AddrTypeP2wpkhP2sh, AddrTypeP2wshP2sh:
-			derivationPath = "m/49h/0h/0h/0/0"
-		case AddrTypeP2wpkh, AddrTypeP2wsh:
-			derivationPath = "m/84h/0h/0h/0/0"
+		switch network {
+		case NetworkTypeMainnet:
+			switch addrType {
+			case AddrTypeP2pkhOrP2sh:
+				derivationPath = "m/44h/0h/0h/0/0"
+			case AddrTypeP2wpkhP2sh, AddrTypeP2wshP2sh:
+				derivationPath = "m/49h/0h/0h/0/0"
+			case AddrTypeP2wpkh, AddrTypeP2wsh:
+				derivationPath = "m/84h/0h/0h/0/0"
+			}
+		case NetworkTypeTestnet:
+			switch addrType {
+			case AddrTypeP2pkhOrP2sh:
+				derivationPath = "m/44h/1h/0h/0/0"
+			case AddrTypeP2wpkhP2sh, AddrTypeP2wshP2sh:
+				derivationPath = "m/49h/1h/0h/0/0"
+			case AddrTypeP2wpkh, AddrTypeP2wsh:
+				derivationPath = "m/84h/1h/0h/0/0"
+			}
 		}
-	}
-
-	switch network {
-	case NetworkTypeMainnet, NetworkTypeTestnet:
-	default:
-		return nil, fmt.Errorf("invalid or unsupported network: %s. allowed networks are %v", network,
-			[]string{NetworkTypeMainnet, NetworkTypeTestnet},
-		)
 	}
 
 	// setup key versions based on network

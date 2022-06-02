@@ -239,6 +239,8 @@ is performed and master key itself is used to derive the public address.
 The default value of `derivation-path` is `auto`, which signifies that the path will be
 chosen according to the `addr-type` flag. In particular, below is the mapping between
 `addr-type` and the `derivation-path`:
+
+For `mainnet`:
 ```text
 addr type                         derivation path
 --------------------------------------------------
@@ -248,11 +250,21 @@ segwit native Bech32              m/84'/0'/0'/0/0
 --------------------------------------------------
 ```
 
+For `testnet`:
+```text
+addr type                         derivation path
+--------------------------------------------------
+legacy                            m/44'/1'/0'/0/0
+segwit compatible P2SH            m/49'/1'/0'/0/0
+segwit native Bech32              m/84'/1'/0'/0/0
+--------------------------------------------------
+```
+
 The way to read these derivation paths is as follows:
 > m / purpose / coin type / account / change / index
 
 where, `'` or `h` or `H` denotes so-called `hardened` value. Read more about it
-on BIP-44 spec.
+on [BIP-44 spec](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
 
 Thus, master private extended keys correspond to the derivation paths that do not
 account `change` and `index` values, such as `m/44'/0'/0'` or `m/49'/0'/0'` etc.
@@ -347,19 +359,17 @@ echo 3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678 \
 ```json
 {
   "seed": "3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678",
-  "xPrv": "tprv8jBzzkzVsFu2aUqaXJPxCSe3fMAF6cjED21ehR9Zr4VKVdWMw7xZFUb9hAJEd3RJeepHkRgcnwWE7JQ3aieKhw4N97EMVfvMZMUNcLcSGf3",
-  "xPub": "tpubDFt39B2k1dahTwsNQx4YbrJAENgBFwv8nKcRywBsGLHiL7m8ZWn9RyD1sHQsg71nPEmN2NUZZWd7REyvcVQ7HMMBcy6VjAF9WGv7bPjpQuK",
-  "pubKeyHex": "024bf0776f0b553c9acfe6d47206849012eae6c81bd8e9fc645b4e84cabcfddc76",
-  "prvKeyWif": "cPPKBqUDZa6Qb56QePPjhiGjTkGTRvTX8wymWCytJjYG9kCHuwY8",
-  "addr": "mm3tBoqHXpUMjN5XFJJjk9UkmKqssxjVj1",
+  "xPrv": "tprv8kFu8KvA1aeUGDaNtevxyVFzUMNzkrjuEL8qn7Py4ASGoGkZbpkZEExR4UCizwwPVeUGp1SBcpaDMZhA8GiPFvPDfr8o4rnx3JfrjS1C9cz",
+  "xPub": "tpubDGwwGjxQ9xL99gcAnJbZNtv73NtvvBvoodjd4dSGUSEfdm1LEDa9QjaHEebkg2VrhvU7Za9wsTDXyZNokb93TTbmMkNrt256Ex6yAgRRz3L",
+  "pubKeyHex": "03c67617201c583f63f0e35997f49e935ba3dd6d4954f9a58590734623c82a21b5",
+  "prvKeyWif": "cMamanoqSi2Bq82yqgKFSVVvVcWHSCnZEpbSUDqu6CFmJQUEYFPH",
+  "addr": "mtJygtHbYmq7kauFn6mVwuay2SWBmka4NJ",
   "addrType": "legacy",
-  "derivationPath": "m/44h/0h/0h/0/0",
+  "derivationPath": "m/44h/1h/0h/0/0",
   "coinType": "btc",
   "network": "testnet"
 }
 ```
-
-> Please note that `testnet` keys are currently not tested via any test vector
 
 ## derived keys
 Child keys can be derived using parent private or public keys and derivation paths. 

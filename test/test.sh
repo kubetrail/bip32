@@ -239,7 +239,7 @@ for line in $(cat bip84.csv); do
     exit 1
   fi
 done
-echo "passed bip84 test matrix"
+echo "passed bip84 test matrix on mainnet"
 
 for line in $(cat bip49.csv); do
   derivationPath=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $1}')
@@ -255,7 +255,7 @@ for line in $(cat bip49.csv); do
     exit 1
   fi
 done
-echo "passed bip49 test matrix"
+echo "passed bip49 test matrix on mainnet"
 
 for line in $(cat bip44.csv); do
   derivationPath=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $1}')
@@ -271,7 +271,7 @@ for line in $(cat bip44.csv); do
     exit 1
   fi
 done
-echo "passed bip44 test matrix"
+echo "passed bip44 test matrix on mainnet"
 
 for line in $(cat bip32.csv); do
   derivationPath=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $1}')
@@ -287,4 +287,72 @@ for line in $(cat bip32.csv); do
     exit 1
   fi
 done
-echo "passed bip32 test matrix"
+echo "passed bip32 test matrix on mainnet"
+
+for line in $(cat bip84-testnet.csv); do
+  derivationPath=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $1}')
+  addrExpected=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $2}')
+  addrGot=$(bip32 gen \
+    --network=testnet \
+    --addr-type=segwit-native \
+    --derivation-path=${derivationPath} \
+    --output-format=json \
+    ${MNEMONIC} \
+    | jq -r '.addr')
+  if [[ "${addrGot}" != "${addrExpected}" ]]; then
+    echo "expected ${addrExpected}, got ${addrGot} while running bip84 tests"
+    exit 1
+  fi
+done
+echo "passed bip84 test matrix on testnet"
+
+for line in $(cat bip49-testnet.csv); do
+  derivationPath=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $1}')
+  addrExpected=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $2}')
+  addrGot=$(bip32 gen \
+    --network=testnet \
+    --addr-type=segwit-compatible \
+    --derivation-path=${derivationPath} \
+    --output-format=json \
+    ${MNEMONIC} \
+    | jq -r '.addr')
+  if [[ "${addrGot}" != "${addrExpected}" ]]; then
+    echo "expected ${addrExpected}, got ${addrGot} while running bip49 tests"
+    exit 1
+  fi
+done
+echo "passed bip49 test matrix on testnet"
+
+for line in $(cat bip44-testnet.csv); do
+  derivationPath=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $1}')
+  addrExpected=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $2}')
+  addrGot=$(bip32 gen \
+    --network=testnet \
+    --addr-type=legacy \
+    --derivation-path=${derivationPath} \
+    --output-format=json \
+    ${MNEMONIC} \
+    | jq -r '.addr')
+  if [[ "${addrGot}" != "${addrExpected}" ]]; then
+    echo "expected ${addrExpected}, got ${addrGot} while running bip44 tests"
+    exit 1
+  fi
+done
+echo "passed bip44 test matrix on testnet"
+
+for line in $(cat bip32-testnet.csv); do
+  derivationPath=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $1}')
+  addrExpected=$(echo ${line} | sed -e 's/,/ /g' | awk '{print $2}')
+  addrGot=$(bip32 gen \
+    --network=testnet \
+    --addr-type=legacy \
+    --derivation-path=${derivationPath} \
+    --output-format=json \
+    ${MNEMONIC} \
+    | jq -r '.addr')
+  if [[ "${addrGot}" != "${addrExpected}" ]]; then
+    echo "expected ${addrExpected}, got ${addrGot} while running bip32 tests"
+    exit 1
+  fi
+done
+echo "passed bip32 test matrix on testnet"

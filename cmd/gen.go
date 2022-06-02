@@ -132,6 +132,7 @@ func init() {
 					keys.AddrTypeSegWitCompatible,
 					keys.AddrTypeSegWitNative,
 					keys.AddrTypeBech32,
+					keys.AddrTypeBip32,
 					keys.AddrTypeBip44,
 					keys.AddrTypeBip49,
 					keys.AddrTypeBip84,
