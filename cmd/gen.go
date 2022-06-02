@@ -27,43 +27,8 @@ import (
 var genCmd = &cobra.Command{
 	Use:   "gen",
 	Short: "Generate keys from mnemonic",
-	Long: `This command generates private/public keys
-from mnemonic and optional secret passphrase per BIP-32 spec.
-
-Alternatively, a seed in hex format can be provided bypassing
-all mnemonic related computation and be directly used for
-key generation
-
-The keys are generated based on a chain derivation path
-Path     |   Remark
----------|--------------------------------------------------------------
-m        |   Master key (aka root key)
-m/0      |   First child of master key
-m/0'     |   First hardened child of master key
-m/0/0    |   First child of first child of master key
-m/0'/0   |   First child of first hardened child of master key
-m/0/0'   |   First hardened child of first child of master key
-m/0'/0'  |   First hardened child of first hardened child of master key'
-
-Mnemonic language can be specified from the following list:
-1. English (default)
-2. Japanese
-3. ChineseSimplified
-4. ChineseTraditional
-5. Czech
-6. French
-7. Italian
-8. Korean
-9. Spanish
-
-BIP-39 proposal: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
-
-Please note that same keys will be generated for mnemonics from different languages
-if the underlying entropy is the same. In other words, keys are always
-generated after translating input mnemonic to English.
-
-Verify output using: http://bip32.org/
-
+	Long: `
+Read more about usage on https://github.com/kubetrail/bip32
 `,
 	RunE: run.Gen,
 	Args: cobra.MaximumNArgs(24),
@@ -167,6 +132,9 @@ func init() {
 					keys.AddrTypeSegWitCompatible,
 					keys.AddrTypeSegWitNative,
 					keys.AddrTypeBech32,
+					keys.AddrTypeBip44,
+					keys.AddrTypeBip49,
+					keys.AddrTypeBip84,
 					keys.AddrTypeP2pkhOrP2sh,
 					keys.AddrTypeP2wpkhP2sh,
 					keys.AddrTypeP2wshP2sh,

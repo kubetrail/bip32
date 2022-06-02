@@ -14,20 +14,8 @@ import (
 var deriveCmd = &cobra.Command{
 	Use:   "derive",
 	Short: "Derive a child key",
-	Long: `Derive a child key from private or public key.
-Please note that derivation of hardened keys is only allowed
-for private keys
-
-The keys are generated based on a chain derivation path
-Path     |   Remark
----------|--------------------------------------------------------------
-0        |   First child of key
-0'       |   First hardened child of private key
-0/0      |   First child of first child of key
-0'/0     |   First child of first hardened child of private key
-0/0'     |   First hardened child of first child of private key
-0'/0'    |   First hardened child of first hardened child of private key'
-
+	Long: `
+Read more about usage on https://github.com/kubetrail/bip32
 `,
 	RunE: run.Derive,
 }

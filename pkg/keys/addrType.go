@@ -13,6 +13,9 @@ const (
 	AddrTypeSegWitCompatible = "segwit-compatible" // same as AddrTypeP2wpkhP2sh, ypub, yprv etc.
 	AddrTypeSegWitNative     = "segwit-native"     // same as AddrTypeP2wpkh, zpub, zprv etc.
 	AddrTypeBech32           = "bech32"            // same as AddrTypeP2wpkh, zpub, zprv etc.
+	AddrTypeBip44            = "bip44"             // same as AddrTypeLegacy xpub, xprv etc.
+	AddrTypeBip49            = "bip49"             // same as AddrTypeSegWitCompatible ypub, yprv etc.
+	AddrTypeBip84            = "bip84"             // same as AddrTypeSegWitNative zpub, zprv etc.
 )
 
 // key versions

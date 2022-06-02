@@ -19,7 +19,7 @@ These addresses can all be traced back to single mnemonic sentence and are
 therefore, "derived" from a master key. In particular, addresses starting with
 `1` correspond to the spec `BIP-44`, whereas addresses starting with `3`
 correspond to the spec `BIP-49` and the ones starting with `bc1` correspond
-to the spec `BIP84`.
+to the spec `BIP-84`.
 
 More info on how to go about generating these keys is below.
 
@@ -99,6 +99,11 @@ prvKeyWif: Ky7kJQEFQDCRhShHaZs7TSCEa1UqGhVZB6BhXUHf3T9pAG6q7987
 addr: 1MJ9PojuE1rA1E8wtrdQXjxaqZdsgddhoh
 ```
 
+> Please note that passing mnemonic as command line arguments is not secure
+> since it may get captured in the shell command history. To avoid this do
+> not pass mnemonic as command line args and instead let the tool ask for
+> it as an input on STDIN
+
 In order to explore the keys better, let's output all keys that are
 part of this step. This is done using `--show-all-keys` flag
 
@@ -141,6 +146,20 @@ key. `addrType` indicates type of the address, i.e., either `legacy`, `segwit-co
 `segwit-native` etc.
 
 `network` and `coinType` indicate the blockchain on which these keys will work.
+
+Below are aliases for address types. These aliases can be used as values for
+`--addr-type` flag:
+```text
+Address type            Aliases
+-------------------------------------------------------
+p2pkh-or-p2sh           legacy, bip44
+p2wpkh-p2sh             segwit-compatible, p2sh, bip49
+p2wsh-p2sh
+p2wpkh                  segwit-native, bech32, bip84
+p2wsh
+```
+Read more about address types 
+[here](https://electrum.readthedocs.io/en/latest/xpub_version_bytes.html#specification)
 
 A secret passphrase can be additionally used in conjunction with mnemonic to apply an
 additional layer of security. Use of `passphrase` is enabled using `--use-passphrase` 

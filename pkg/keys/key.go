@@ -189,32 +189,30 @@ type Config struct {
 	Seed           []byte
 	Network        string
 	DerivationPath string
-	ScriptType     string
+	AddrType       string
 }
 
 // New generates a new key pair with a seed. The derivation paths
 // can be successive derivation indices such as m, 0, 0h etc.
 // or can be provided as m/0/0h.
 func New(config *Config) (*Key, error) {
-	seed, network, derivationPath, scriptType :=
+	seed, network, derivationPath, addrType :=
 		config.Seed,
 		strings.ToLower(config.Network),
 		strings.ToLower(config.DerivationPath),
-		strings.ToLower(config.ScriptType)
+		strings.ToLower(config.AddrType)
 
-	var addrType string
-
-	switch scriptType {
-	case AddrTypeLegacy:
-		scriptType = AddrTypeP2pkhOrP2sh
-	case AddrTypeP2sh, AddrTypeSegWitCompatible:
-		scriptType = AddrTypeP2wpkhP2sh
-	case AddrTypeSegWitNative, AddrTypeBech32:
-		scriptType = AddrTypeP2wpkh
+	switch addrType {
+	case AddrTypeLegacy, AddrTypeBip44:
+		addrType = AddrTypeP2pkhOrP2sh
+	case AddrTypeP2sh, AddrTypeSegWitCompatible, AddrTypeBip49:
+		addrType = AddrTypeP2wpkhP2sh
+	case AddrTypeSegWitNative, AddrTypeBech32, AddrTypeBip84:
+		addrType = AddrTypeP2wpkh
 	}
 
 	if derivationPath == "auto" {
-		switch scriptType {
+		switch addrType {
 		case AddrTypeP2pkhOrP2sh:
 			derivationPath = "m/44h/0h/0h/0/0"
 		case AddrTypeP2wpkhP2sh, AddrTypeP2wshP2sh:
@@ -222,15 +220,6 @@ func New(config *Config) (*Key, error) {
 		case AddrTypeP2wpkh, AddrTypeP2wsh:
 			derivationPath = "m/84h/0h/0h/0/0"
 		}
-	}
-
-	switch scriptType {
-	case AddrTypeP2pkhOrP2sh:
-		addrType = AddrTypeLegacy
-	case AddrTypeP2wpkhP2sh, AddrTypeP2wshP2sh:
-		addrType = fmt.Sprintf("%s, %s", AddrTypeSegWitCompatible, AddrTypeP2sh)
-	case AddrTypeP2wpkh, AddrTypeP2wsh:
-		addrType = fmt.Sprintf("%s, %s", AddrTypeSegWitNative, AddrTypeBech32)
 	}
 
 	switch network {
@@ -243,12 +232,12 @@ func New(config *Config) (*Key, error) {
 
 	// setup key versions based on network
 	var ok bool
-	bip32.PublicWalletVersion, ok = keyVersions[path.Join(CoinTypeBtc, network, scriptType, KeyTypePub)]
+	bip32.PublicWalletVersion, ok = keyVersions[path.Join(CoinTypeBtc, network, addrType, KeyTypePub)]
 	if !ok {
 		return nil, fmt.Errorf("failed to get key version for pubic key")
 	}
 
-	bip32.PrivateWalletVersion, ok = keyVersions[path.Join(CoinTypeBtc, network, scriptType, KeyTypePrv)]
+	bip32.PrivateWalletVersion, ok = keyVersions[path.Join(CoinTypeBtc, network, addrType, KeyTypePrv)]
 	if !ok {
 		return nil, fmt.Errorf("failed to get key version for private key")
 	}
@@ -270,15 +259,19 @@ func New(config *Config) (*Key, error) {
 
 	key.Seed = hex.EncodeToString(seed)
 	key.DerivationPath = derivationPath
-	key.AddrType = addrType
 
-	switch scriptType {
+	switch addrType {
 	case AddrTypeP2pkhOrP2sh:
 		key.segWitNested, key.segWitBech32 = "", ""
+		key.AddrType = AddrTypeLegacy
 	case AddrTypeP2wpkhP2sh, AddrTypeP2wshP2sh:
 		key.Addr, key.segWitNested, key.segWitBech32 = key.segWitNested, "", ""
+		key.AddrType = fmt.Sprintf("%s, %s", AddrTypeSegWitCompatible, AddrTypeP2sh)
 	case AddrTypeP2wpkh, AddrTypeP2wsh:
 		key.Addr, key.segWitNested, key.segWitBech32 = key.segWitBech32, "", ""
+		key.AddrType = fmt.Sprintf("%s, %s", AddrTypeSegWitNative, AddrTypeBech32)
+	default:
+		return nil, fmt.Errorf("invalid addr type")
 	}
 
 	return key, nil

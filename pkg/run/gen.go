@@ -111,7 +111,7 @@ func Gen(cmd *cobra.Command, args []string) error {
 			Seed:           seed,
 			Network:        network,
 			DerivationPath: derivationPath,
-			ScriptType:     scriptType,
+			AddrType:       scriptType,
 		},
 	)
 	if err != nil {
