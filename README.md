@@ -635,6 +635,50 @@ Inspect UTXO's for the addresses in these transactions
 btcio utxo --tx-hash=<your-transaction-hash> | jq '.'
 ```
 
+## derivation paths and transactions
+Below is a typical scenario of how a wallet would rotate addresses making use of chain
+derivation paths.
+
+### step 1: Receive funds using multiple transactions
+Let's say you created a new wallet using a new mnemonic that was never used before and then
+receive funds into that wallet using three separate transactions. Typically, a wallet
+would rotate addresses after every transaction using following derivation paths:
+```text
+Transaction Number      Derivation path      Amount BTC Received
+--------------------------------------------------------------------
+0                       m/84h/0h/0h/0/0      0.12
+1                       m/84h/0h/0h/0/1      0.13
+2                       m/84h/0h/0h/0/2      0.15
+--------------------------------------------------------------------
+```
+This will reflect as total account balance of `0.2`, which is scattered
+among three separate addresses that are all derived using address index
+value as shown above.
+
+### step 2: Send funds using one transaction
+Now if we were to send an amount of `0.18` to an external address, we don't have
+sufficient funds in any one single address. This will require pooling funds from
+more than one addresses. For the case shown above, it can be done using pooling
+funds from last two addresses or using all three addresses.
+
+Each transaction has a set of addresses grouped as `inputs` and `outputs`.
+So typically a wallet would group all addresses in inputs required to
+pool the sufficient funds.
+
+However, a new address may get created where the remaining balance is transferred.
+This new address would typically be generated using following derivation path
+```text
+Transaction Number      Derivation path      Received      Sent
+--------------------------------------------------------------------
+3                       m/84h/0h/0h/1/0      0.02
+3                       m/84h/0h/0h/0/0                    0.12
+3                       m/84h/0h/0h/0/1                    0.13
+3                       m/84h/0h/0h/0/2                    0.15
+--------------------------------------------------------------------
+```
+As you can see all these addresses are part of the same transaction and
+the remaining balance is accumulated in the so-called `change` address
+
 ## references
 * [BIP-32 Spec](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
 * [BIP-44 Spec](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
